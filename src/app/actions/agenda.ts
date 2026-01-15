@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
+import type { Holiday } from "@prisma/client";
 
 export async function getTenantContext() {
     const supabase = await createClient();
@@ -153,7 +153,7 @@ export async function checkSchedulingConflicts(data: {
     });
 
     // Primitive recurrence check (just day/month matching assuming date is YYYY-MM-DD)
-    const blockingHoliday = holidays.find(h => {
+    const blockingHoliday = holidays.find((h: Holiday) => {
         if (!h.blocking) return false;
         if (!h.isRecurring) return true;
         const hDate = new Date(h.date);
