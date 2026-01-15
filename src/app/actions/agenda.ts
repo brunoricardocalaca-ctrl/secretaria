@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 export async function getTenantContext() {
     const supabase = await createClient();
@@ -97,7 +98,7 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
 export async function deleteAppointment(appointmentId: string) {
     const { tenantId } = await getTenantContext();
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // 1. Delete related services
         await tx.appointmentService.deleteMany({
             where: { appointmentId }
