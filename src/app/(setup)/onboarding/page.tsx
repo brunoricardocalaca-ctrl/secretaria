@@ -1,11 +1,16 @@
+"use client"
+
 import { createTenantAction } from "@/app/actions/onboarding"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Bot, Building2 } from "lucide-react"
+import { useFormState } from "react-dom"
 
 export default function OnboardingPage() {
+    const [state, formAction] = useFormState(createTenantAction, null)
+
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
             <div className="mb-8 text-center">
@@ -30,8 +35,13 @@ export default function OnboardingPage() {
                         Defina o nome que será usado para identificar seu negócio no sistema.
                     </CardDescription>
                 </CardHeader>
-                <form action={createTenantAction}>
+                <form action={formAction}>
                     <CardContent className="space-y-4">
+                        {state?.error && (
+                            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                                {state.error}
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <Label htmlFor="companyName">Nome da Empresa / Clínica</Label>
                             <Input

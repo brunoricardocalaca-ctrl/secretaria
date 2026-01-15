@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { signup } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
@@ -5,8 +7,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Bot, Sparkles } from "lucide-react"
+import { useFormState } from "react-dom"
 
 export default function RegisterPage() {
+    const [state, formAction] = useFormState(signup, null)
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
             <div className="absolute top-8 left-8 flex items-center gap-2">
@@ -26,8 +31,13 @@ export default function RegisterPage() {
                         Experimente a automação premium para seu negócio.
                     </CardDescription>
                 </CardHeader>
-                <form action={signup}>
+                <form action={formAction}>
                     <CardContent className="grid gap-4">
+                        {state?.error && (
+                            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                                {state.error}
+                            </div>
+                        )}
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email Corporativo</Label>
                             <Input id="email" name="email" type="email" placeholder="voce@empresa.com" required />

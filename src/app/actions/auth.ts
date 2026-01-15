@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
-export async function login(formData: FormData) {
+export async function login(
+    prevState: { error?: string; success?: string } | null,
+    formData: FormData
+) {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const supabase = await createClient();
@@ -21,7 +24,10 @@ export async function login(formData: FormData) {
     return redirect("/dashboard");
 }
 
-export async function signup(formData: FormData) {
+export async function signup(
+    prevState: { error?: string; success?: string } | null,
+    formData: FormData
+) {
     const origin = (await headers()).get("origin");
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -66,7 +72,10 @@ export async function signInWithGoogle() {
 }
 
 // Forgot Password
-export async function resetPassword(formData: FormData) {
+export async function resetPassword(
+    prevState: { error?: string; success?: string } | null,
+    formData: FormData
+) {
     const origin = (await headers()).get("origin");
     const email = formData.get("email") as string;
     const supabase = await createClient();
@@ -83,7 +92,10 @@ export async function resetPassword(formData: FormData) {
 }
 
 // Update Password (after clicking reset link)
-export async function updatePassword(formData: FormData) {
+export async function updatePassword(
+    prevState: { error?: string; success?: string } | null,
+    formData: FormData
+) {
     const password = formData.get("password") as string;
     const supabase = await createClient();
 

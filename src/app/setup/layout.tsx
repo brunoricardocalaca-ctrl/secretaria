@@ -38,7 +38,6 @@ export default async function SetupLayout({
     return (
         <div className="min-h-screen bg-[#121212] text-white flex flex-col">
             <SetupHeader
-                userName={profile.name || undefined}
                 userEmail={user.email || ""}
                 tenant={profile.tenant}
             />

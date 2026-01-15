@@ -14,7 +14,10 @@ function slugify(text: string) {
         .replace(/--+/g, "-");    // Replace multiple - with single -
 }
 
-export async function createTenantAction(formData: FormData) {
+export async function createTenantAction(
+    prevState: { error?: string; success?: string } | null,
+    formData: FormData
+) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -59,8 +59,6 @@ export async function getChats(tenantOverrideId?: string) {
                     : "",
                 unread: 0,
                 whatsapp: lead.whatsapp,
-                unread: 0,
-                whatsapp: lead.whatsapp,
                 instanceName: lead.instanceName,
                 aiPaused: lead.aiPaused
             }))

@@ -1,11 +1,16 @@
+"use client"
+
 import Link from "next/link"
 import { login } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowRight, EyeOff } from "lucide-react"
+import { useFormState } from "react-dom"
 
 export default function LoginPage() {
+    const [state, formAction] = useFormState(login, null)
+
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-4 py-12">
             {/* Logo Section */}
@@ -26,7 +31,12 @@ export default function LoginPage() {
 
             {/* Login Card */}
             <div className="w-full max-w-[400px] rounded-[2.5rem] border border-white/[0.03] bg-[#121212]/40 p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-3xl transition-all hover:border-white/[0.06]">
-                <form action={login} className="space-y-6">
+                <form action={formAction} className="space-y-6">
+                    {state?.error && (
+                        <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-400">
+                            {state.error}
+                        </div>
+                    )}
                     <div className="space-y-2.5">
                         <Label htmlFor="email" className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] ml-1">
                             E-mail de acesso
@@ -43,7 +53,7 @@ export default function LoginPage() {
 
                     <div className="space-y-2.5">
                         <div className="flex items-center justify-between ml-1">
-                            <Label htmlFor="password" name="password" className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
+                            <Label htmlFor="password" className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
                                 Senha
                             </Label>
                         </div>
