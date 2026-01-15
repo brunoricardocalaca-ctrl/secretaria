@@ -1,0 +1,300 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector]
+}
+
+/// Tenant: A clinic or business using the SaaS.
+model Tenant {
+  id                String                @id @default(uuid())
+  name              String
+  slug              String                @unique
+  planStatus        String                @default("trial")
+  evolutionId       String?
+  whatsappConnected Boolean               @default(false)
+  configs           Json?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  setupCompleted    Boolean               @default(false)
+  setupStep         Int                   @default(1)
+  agendaEnabled     Boolean               @default(false)
+  
+  // SaaS Management Fields
+  ownerEmail        String?
+  ownerPhone        String?
+  planPrice         Decimal?              @default(297.00) @db.Decimal(10, 2)
+  nextBillingDate   DateTime?
+
+  appointments      Appointment[]
+  availabilities    Availability[]
+  bankAccounts      BankAccount[]
+  conversations     Conversation[]
+  documents         Document[]
+  holidays          Holiday[]
+  leads             Lead[]
+  users             Profile[]
+  resources         Resource[]
+  services          Service[]
+  categories        TransactionCategory[]
+  transactions      Transaction[]
+  whatsappInstances WhatsappInstance[]
+
+  @@map("tenants")
+}
+
+model WhatsappInstance {
+  id            String         @id @default(uuid())
+  tenantId      String
+  name          String
+  internalName  String         @unique
+  token         String?
+  status        String         @default("disconnected")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  leads         Lead[]
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("whatsapp_instances")
+}
+
+/// Profile: A user belonging to a tenant. Maps to Supabase Auth.
+model Profile {
+  id             String         @id @default(uuid())
+  userId         String         @unique
+  email          String
+  tenantId       String
+  role           String         @default("admin")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  appointments   Appointment[]
+  availabilities Availability[]
+  holidays       Holiday[]
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+/// Service: A service offered by the tenant.
+model Service {
+  id           String               @id @default(uuid())
+  tenantId     String
+  name         String
+  description  String?
+  price        Decimal?             @db.Decimal(10, 2)
+  durationMin  Int?
+  priceHidden  Boolean              @default(false)
+  requiresEval Boolean              @default(false)
+  rules        Json?
+  active       Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  imageUrl     String?
+  tags         String?
+  appointments AppointmentService[]
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("services")
+}
+
+/// Document: RAG documents for the AI.
+model Document {
+  id        String                 @id @default(uuid())
+  tenantId  String                 @map("tenant_id")
+  content   String
+  metadata  Json?
+  embedding Unsupported("vector")?
+  createdAt DateTime               @default(now())
+  tenant    Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+/// Lead: A contact from WhatsApp.
+model Lead {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  whatsapp      String
+  name          String?
+  pushName      String?
+  tenantId      String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  instanceName  String?
+  appointments  Appointment[]
+  conversations Conversation[]
+  instance      WhatsappInstance? @relation(fields: [instanceName], references: [internalName], onDelete: Cascade)
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  aiPaused      Boolean           @default(false)
+
+  @@unique([whatsapp, instanceName])
+  @@map("leads")
+}
+
+/// Conversation: Chat history between Lead and AI.
+model Conversation {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role         String
+  content      String
+  leadId       String            @db.Uuid
+  tenantId     String
+  createdAt    DateTime          @default(now())
+  instanceName String?
+  instance     WhatsappInstance? @relation(fields: [instanceName], references: [internalName], onDelete: Cascade)
+  lead         Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "conversations_leadid_fkey")
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("conversations")
+}
+
+model Appointment {
+  id             String               @id @default(uuid())
+  date           DateTime
+  startTime      DateTime
+  endTime        DateTime
+  status         String               @default("SCHEDULED")
+  notes          String?
+  leadId         String               @db.Uuid
+  profileId      String
+  tenantId       String
+  recurrenceRule String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  services       AppointmentService[]
+  lead           Lead                 @relation(fields: [leadId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "appointments_leadid_fkey")
+  profile        Profile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions   Transaction[]
+  resources      Resource[]           @relation("AppointmentToResource")
+
+  @@map("appointments")
+}
+
+model Resource {
+  id           String        @id @default(uuid())
+  name         String
+  type         String
+  exclusive    Boolean       @default(true)
+  capacity     Int           @default(1)
+  description  String?
+  tenantId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointments Appointment[] @relation("AppointmentToResource")
+
+  @@map("resources")
+}
+
+model Availability {
+  id           String   @id @default(uuid())
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  isWorkingDay Boolean  @default(true)
+  pauses       Json?
+  profileId    String?
+  tenantId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  profile      Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("availabilities")
+}
+
+model Holiday {
+  id          String   @id @default(uuid())
+  name        String
+  date        DateTime
+  isRecurring Boolean  @default(false)
+  blocking    Boolean  @default(true)
+  startTime   String?
+  endTime     String?
+  profileId   String?
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  profile     Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("holidays")
+}
+
+model AppointmentService {
+  id            String      @id @default(uuid())
+  appointmentId String
+  serviceId     String
+  price         Decimal?    @db.Decimal(10, 2)
+  discount      Decimal     @default(0) @db.Decimal(10, 2)
+  duration      Int
+  commission    Decimal?    @db.Decimal(10, 2)
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  service       Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("appointment_services")
+}
+
+model BankAccount {
+  id           String        @id @default(uuid())
+  name         String
+  type         String        @default("CURRENT")
+  balance      Decimal       @default(0) @db.Decimal(10, 2)
+  tenantId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("bank_accounts")
+}
+
+model TransactionCategory {
+  id           String        @id @default(uuid())
+  name         String
+  type         String        @default("INCOME")
+  tenantId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("transaction_categories")
+}
+
+model Transaction {
+  id            String               @id @default(uuid())
+  description   String
+  amount        Decimal              @db.Decimal(10, 2)
+  type          String               @default("INCOME")
+  status        String               @default("PAID")
+  date          DateTime             @default(now())
+  bankAccountId String?
+  categoryId    String?
+  leadId        String?              @db.Uuid
+  appointmentId String?
+  tenantId      String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  appointment   Appointment?         @relation(fields: [appointmentId], references: [id])
+  bankAccount   BankAccount?         @relation(fields: [bankAccountId], references: [id])
+  category      TransactionCategory? @relation(fields: [categoryId], references: [id])
+  lead          Lead?                @relation(fields: [leadId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "transactions_leadid_fkey")
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_configs")
+}
