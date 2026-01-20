@@ -20,22 +20,9 @@ export async function parsePriceTableFile(formData: FormData) {
             const worksheet = workbook.Sheets[sheetName];
             extractedText = XLSX.utils.sheet_to_csv(worksheet);
         } else if (fileName.endsWith('.pdf')) {
-            // Polyfill DOMMatrix and Path2D for pdf-parse/pdfjs-dist compatibility in Node.js
-            try {
-                if (typeof (global as any).DOMMatrix === 'undefined') {
-                    const DOMMatrix = require('@thednp/dommatrix');
-                    (global as any).DOMMatrix = DOMMatrix.default || DOMMatrix;
-                }
-                if (typeof (global as any).Path2D === 'undefined') {
-                    require('path2d-polyfill');
-                }
-            } catch (e) {
-                console.error("Polyfill error:", e);
-            }
-
-            const pdf = require('pdf-parse');
-            const data = await pdf(buffer);
-            extractedText = data.text;
+            const { extractText } = require('unpdf');
+            const { text } = await extractText(buffer);
+            extractedText = text;
         } else {
             return { error: "Formato de arquivo não suportado. Use PDF ou XLSX." };
         }
