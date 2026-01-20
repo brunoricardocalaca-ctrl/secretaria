@@ -21,7 +21,9 @@ export async function parsePriceTableFile(formData: FormData) {
             extractedText = XLSX.utils.sheet_to_csv(worksheet);
         } else if (fileName.endsWith('.pdf')) {
             const { extractText } = require('unpdf');
-            const { text } = await extractText(buffer);
+            // unpdf/pdfjs requires Uint8Array specifically
+            const uint8Array = new Uint8Array(buffer);
+            const { text } = await extractText(uint8Array);
             extractedText = text;
         } else {
             return { error: "Formato de arquivo não suportado. Use PDF ou XLSX." };
