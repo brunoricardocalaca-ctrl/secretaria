@@ -18,22 +18,21 @@ async function getTenantContext() {
     return { tenantId: profile.tenantId, configs: profile.tenant.configs as any };
 }
 
-export async function generateServiceDraft(description: string) {
+export async function generateServiceDraft(input: { name?: string, description?: string }) {
     try {
-        const { configs } = await getTenantContext();
-        // Use Global Key
         const apiKey = await getSystemConfig("openai_api_key");
 
         if (!apiKey) {
             return { error: "OpenAI API Key não configurada no Admin Global." };
         }
 
-        if (!description || description.trim().length < 5) {
-            return { error: "Descrição muito curta. Forneça mais detalhes para a IA." };
+        const { description, name } = input;
+
+        if (!description && !name) {
+            return { error: "Forneça pelo menos o nome ou uma breve descrição para a IA." };
         }
 
-        // Fetch custom prompt from DB
-        // Fetch custom prompt from DB
+        // Fetch custom prompts from DB
         const customPrompt = await prisma.systemConfig.findUnique({
             where: { key: "service_gen_prompt" }
         });
@@ -43,21 +42,21 @@ export async function generateServiceDraft(description: string) {
         });
 
         let systemPrompt = customPrompt?.value || `Você é uma IA especialista em criar catálogos de serviços para clínicas e estúdios.
-                        Sua tarefa é analisar uma descrição (mesmo que rascunho) e estruturar um serviço profissional.
+                        Sua tarefa é analisar o nome e/ou uma descrição (mesmo que rascunho) e estruturar um serviço profissional completo.
                         
-                        Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explicações:
+                        Retorne APENAS um JSON válido com a seguinte estrutura:
                         {
                             "suggestedName": "Nome curto e comercial do serviço",
-                            "description": "Texto persuasivo em um parágrafo usando técnicas de copywriting. Use emojis e bullet points se necessário para vender o serviço via WhatsApp.",
-                            "durationMin": 30, // Estimativa em minutos (number)
-                            "tags": "tag1, tag2, tag3", // 5 a 8 tags positivas separadas por vírgula
-                            "negativeTags": "tag1, tag2, tag3", // 3 a 5 tags negativas (o que NÃO é o serviço)
-                            "diagnosticQuestions": ["Pergunta 1?", "Pergunta 2?", "Pergunta 3?"] // Array de 3 perguntas para qualificar o lead
+                            "description": "Texto persuasivo de 1 a 2 parágrafos. Use técnicas de copywriting, emojis e bullet points se necessário.",
+                            "durationMin": 30,
+                            "tags": "tag1, tag2, tag3",
+                            "negativeTags": "tag1, tag2, tag3",
+                            "diagnosticQuestions": ["Pergunta 1?", "Pergunta 2?", "Pergunta 3?"]
                         }`;
 
         // Inject specific description instructions if set
         if (descriptionPromptRecord?.value && descriptionPromptRecord.value.trim() !== "") {
-            systemPrompt += `\n\nIMPORTANTE SOBRE A DESCRIÇÃO:\n${descriptionPromptRecord.value}`;
+            systemPrompt += `\n\nREGRAS CRÍTICAS PARA A DESCRIÇÃO:\n${descriptionPromptRecord.value}`;
         }
 
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -67,7 +66,7 @@ export async function generateServiceDraft(description: string) {
                 "Authorization": `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini", // Fast and efficient for this task
+                model: "gpt-4o-mini",
                 messages: [
                     {
                         role: "system",
@@ -75,7 +74,7 @@ export async function generateServiceDraft(description: string) {
                     },
                     {
                         role: "user",
-                        content: `Descrição do usuário: "${description}"`
+                        content: `Nome fornecido: "${name || "N/A"}"\nDescrição/Rascunho fornecido: "${description || "N/A"}"`
                     }
                 ],
                 temperature: 0.7,

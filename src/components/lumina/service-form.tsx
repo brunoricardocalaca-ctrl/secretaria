@@ -211,6 +211,11 @@ export function ServiceForm({
         // Initializing with 'true' (hidden) by default unless explicitly false
         durationHidden: service?.id ? (rules.durationHidden ?? true) : true,
 
+        // Tags configuration
+        positiveTags: rules.positiveTags || service?.tags || "",
+        negativeTags: rules.negativeTags || "",
+        showNegativeTags: !!rules.negativeTags,
+
         // Diagnostic Questions
         hasDiagnosticQuestions: service?.id ? (rules.hasDiagnosticQuestions ?? true) : true,
         diagnosticQuestions: (rules.diagnosticQuestions && rules.diagnosticQuestions.length > 0)
@@ -220,8 +225,6 @@ export function ServiceForm({
                 "Você já tentou resolver isso antes? Se sim, o que funcionou ou não?",
                 "O que você mais espera alcançar com isso?"
             ],
-        negativeTags: rules.negativeTags || "",
-        showNegativeTags: !!rules.negativeTags,
     });
 
     const defaultQuestions = [
@@ -233,13 +236,13 @@ export function ServiceForm({
     const supabase = createClient();
 
     async function handleGenerateAI() {
-        if (!formData.description || formData.description.length < 10) {
-            alert("Por favor, digite pelo menos uma breve descrição do serviço para a IA entenda o que criar.");
+        if (!formData.description && !formData.name) {
+            alert("Por favor, preencha o nome ou uma breve descrição do serviço para a IA entender o que criar.");
             return;
         }
 
         setGenerating(true);
-        const res = await generateServiceDraft(formData.description);
+        const res = await generateServiceDraft({ name: formData.name, description: formData.description });
         setGenerating(false);
 
         if (res.success) {
@@ -249,7 +252,7 @@ export function ServiceForm({
                 name: (prev.name && prev.name.length > 3) ? prev.name : data.suggestedName, // Only replace if name is empty/short
                 description: data.description || prev.description, // AI Suggested Description
                 durationMin: data.durationMin ? data.durationMin.toString() : prev.durationMin,
-                tags: data.tags || prev.tags,
+                positiveTags: data.tags || prev.positiveTags,
                 negativeTags: data.negativeTags || prev.negativeTags,
                 showNegativeTags: !!data.negativeTags, // Auto-open negative tags
 
@@ -330,6 +333,8 @@ export function ServiceForm({
             durationHidden: formData.durationHidden,
             hasDiagnosticQuestions: formData.hasDiagnosticQuestions,
             diagnosticQuestions: formData.diagnosticQuestions,
+            positiveTags: formData.positiveTags,
+            negativeTags: formData.negativeTags,
         };
 
         // If it's a table, generate the priceTableContent as Markdown
@@ -341,11 +346,6 @@ export function ServiceForm({
             }
         }
 
-        // Add negative tags to rules
-        if (formData.negativeTags) {
-            rules.negativeTags = formData.negativeTags;
-        }
-
         const res = await upsertService({
             id: formData.id,
             name: formData.name,
@@ -355,7 +355,7 @@ export function ServiceForm({
             priceHidden: formData.priceHidden,
             requiresEval: formData.requiresEval,
             imageUrl: formData.imageUrl,
-            tags: formData.tags,
+            tags: formData.positiveTags, // Still updating top-level tags for legacy support
             active: formData.active,
             rules: rules,
         });
@@ -625,8 +625,8 @@ export function ServiceForm({
                                 </div>
 
                                 <Textarea
-                                    value={formData.tags}
-                                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                                    value={formData.positiveTags}
+                                    onChange={(e) => setFormData({ ...formData, positiveTags: e.target.value })}
                                     placeholder="Ex: protocolo de emagrecimento, perda de peso, secar barriga"
                                     className="bg-[#0A0A0A] border-transparent focus:border-purple-500/50 text-white min-h-[80px] rounded-xl resize-none"
                                 />

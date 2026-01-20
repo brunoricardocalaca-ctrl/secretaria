@@ -17,14 +17,21 @@ export default async function DashboardLayout({
         return redirect("/login")
     }
 
-    const profile = await prisma.profile.findUnique({
-        where: { userId: user.id },
-        include: { tenant: true }
-    })
+    let profile;
+    try {
+        profile = await prisma.profile.findUnique({
+            where: { userId: user.id },
+            include: { tenant: true }
+        })
 
-    // If no profile, they belong in onboarding
-    if (!profile) {
-        return redirect("/onboarding")
+        // If no profile, they belong in onboarding
+        if (!profile) {
+            return redirect("/onboarding")
+        }
+    } catch (error) {
+        console.error("Dashboard Layout Database Error:", error);
+        // Throwing error here will trigger error.tsx
+        throw new Error("Falha ao carregar perfil do usuário. Por favor, tente novamente.");
     }
 
     return (
