@@ -115,36 +115,32 @@ export async function generateServiceDraft(input: any) {
     }
 }
 
-export async function generateAssessmentDescription(serviceName: string, draftDescription?: string) {
+export async function generateAssessmentDescription(input: { serviceName: string, evaluationName?: string, description?: string }) {
     try {
-        const { configs } = await getTenantContext();
-        // Use Global Key
         const apiKey = await getSystemConfig("openai_api_key");
 
         if (!apiKey) {
             return { error: "OpenAI API Key não configurada no Admin Global." };
         }
 
+        const { serviceName, evaluationName, description } = input;
+
         // Fetch custom prompt
         const customPrompt = await prisma.systemConfig.findUnique({
             where: { key: "assessment_gen_prompt" }
         });
 
-        console.log("DEBUG: Fetching assessment prompt:");
-        console.log("DEBUG: Key: assessment_gen_prompt");
-        console.log("DEBUG: Value from DB:", customPrompt?.value);
-
         const systemPrompt = customPrompt?.value || `Você é uma especialista em vendas de clínicas de estética e saúde.
-        Crie uma descrição persuasiva para a "Avaliação" do serviço "${serviceName}".
+        Crie uma descrição persuasiva para a avaliação do serviço "${serviceName}".
         
-        Objetivo: Explicar ao cliente por que a avaliação é necessária (ex: segurança, personalização) e vender a ideia de agendar.
+        Objetivo: Explicar ao cliente por que a análise prévia é necessária e vender a ideia de agendar.
         Formato: Texto curto (1 parágrafo ou bullet points), com emojis, tom acolhedor e profissional.
         
         Retorne APENAS o texto da descrição.`;
 
-        console.log("DEBUG: Final System Prompt Used:", systemPrompt);
-
-        const userContent = draftDescription ? `Contexto adicional do usuário: "${draftDescription}"` : `Serviço: ${serviceName}`;
+        const userContent = `Serviço: "${serviceName}"
+Nome da Avaliação: "${evaluationName || "Avaliação"}"
+Descrição/Contexto da Avaliação: "${description || "N/A"}"`;
 
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",

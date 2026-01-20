@@ -273,7 +273,11 @@ export function ServiceForm({
             return;
         }
         setGeneratingAssessment(true);
-        const res = await generateAssessmentDescription(formData.name, formData.description);
+        const res = await generateAssessmentDescription({
+            serviceName: formData.name,
+            evaluationName: formData.evaluationName,
+            description: formData.evaluationDescription || formData.description
+        });
         setGeneratingAssessment(false);
 
         if (res.success) {
