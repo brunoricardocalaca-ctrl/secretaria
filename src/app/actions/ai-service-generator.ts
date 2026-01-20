@@ -66,9 +66,13 @@ export async function generateServiceDraft(input: any) {
                             "diagnosticQuestions": ["Pergunta 1?", "Pergunta 2?", "Pergunta 3?"]
                         }`;
 
-        // Inject specific description instructions if set
+        // FORCE inclusion of description field and apply specific rules
+        systemPrompt += `\n\nIMPORTANTE: O JSON retornado DEVE obrigatoriamente conter o campo "description".`;
+
         if (descriptionPromptRecord?.value && descriptionPromptRecord.value.trim() !== "") {
-            systemPrompt += `\n\nREGRAS CRÍTICAS PARA A DESCRIÇÃO:\n${descriptionPromptRecord.value}`;
+            systemPrompt += `\n\nREGRAS CRÍTICAS PARA O CAMPO "description":\n${descriptionPromptRecord.value}`;
+        } else {
+            systemPrompt += `\n\nRegra para o campo "description": Texto persuasivo em um ou dois parágrafos usando técnicas de copywriting. Use emojis e se necessário para vender o serviço via WhatsApp.`;
         }
 
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
