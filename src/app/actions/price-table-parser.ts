@@ -1,6 +1,5 @@
 "use server";
 
-import * as XLSX from 'xlsx';
 import { getSystemConfig } from './admin-settings';
 
 export async function parsePriceTableFile(formData: FormData) {
@@ -15,12 +14,12 @@ export async function parsePriceTableFile(formData: FormData) {
         const fileName = file.name.toLowerCase();
 
         if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+            const XLSX = require('xlsx');
             const workbook = XLSX.read(buffer, { type: 'buffer' });
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             extractedText = XLSX.utils.sheet_to_csv(worksheet);
         } else if (fileName.endsWith('.pdf')) {
-            // Moved require inside to prevent import-time side effects in production
             const pdf = require('pdf-parse');
             const data = await pdf(buffer);
             extractedText = data.text;
