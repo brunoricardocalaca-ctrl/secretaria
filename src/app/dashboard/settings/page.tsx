@@ -15,6 +15,7 @@ export default async function SettingsPage() {
             tenant: {
                 select: {
                     id: true,
+                    name: true,
                     configs: true
                 }
             }
@@ -23,5 +24,10 @@ export default async function SettingsPage() {
 
     if (!profile) return redirect("/onboarding");
 
-    return <SettingsClient initialConfigs={profile.tenant.configs as any} />;
+    return (
+        <SettingsClient
+            initialConfigs={profile.tenant.configs as any}
+            initialTenantName={profile.tenant.name}
+        />
+    );
 }

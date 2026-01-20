@@ -23,7 +23,7 @@ async function getTenantId() {
 
 const evolution = new EvolutionClient();
 
-export async function updateTenantConfig(newConfigs: any) {
+export async function updateTenantConfig(newConfigs: any, tenantName?: string) {
     try {
         const tenantId = await getTenantId();
 
@@ -42,7 +42,8 @@ export async function updateTenantConfig(newConfigs: any) {
         await prisma.tenant.update({
             where: { id: tenantId },
             data: {
-                configs: mergedConfigs as any
+                configs: mergedConfigs as any,
+                ...(tenantName ? { name: tenantName } : {})
             }
         });
 

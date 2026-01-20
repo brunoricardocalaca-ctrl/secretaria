@@ -11,14 +11,15 @@ import { updateTenantConfig, syncWebhooksAction } from "@/app/actions/settings";
 import { Bot, Clock, Phone, Webhook, Save, Loader2, Instagram, MessageSquare, Check, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function SettingsClient({ initialConfigs }: { initialConfigs: any }) {
+export function SettingsClient({ initialConfigs, initialTenantName }: { initialConfigs: any, initialTenantName: string }) {
     const [configs, setConfigs] = useState(initialConfigs || {});
+    const [tenantName, setTenantName] = useState(initialTenantName || "");
     const [loading, setLoading] = useState(false);
     const [syncLoading, setSyncLoading] = useState(false);
 
     async function handleSave() {
         setLoading(true);
-        const res = await updateTenantConfig(configs);
+        const res = await updateTenantConfig(configs, tenantName);
         if (res.success) {
             // Success
         } else {
@@ -101,6 +102,15 @@ export function SettingsClient({ initialConfigs }: { initialConfigs: any }) {
                 {/* --- IDENTIDADE --- */}
                 <TabsContent value="identity" className="space-y-6">
                     <div className="bg-[#1c1c1c] border border-[#2a2a2a] rounded-2xl p-6 space-y-6">
+                        <div className="space-y-3">
+                            <Label className="text-white">Nome da Clínica</Label>
+                            <Input
+                                value={tenantName}
+                                onChange={(e) => setTenantName(e.target.value)}
+                                className="bg-[#121212] border-[#2a2a2a] text-white"
+                                placeholder="Nome da sua clínica"
+                            />
+                        </div>
                         <div className="space-y-3">
                             <Label className="text-white">Nome da Assistente</Label>
                             <Input
