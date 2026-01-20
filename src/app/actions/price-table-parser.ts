@@ -20,10 +20,17 @@ export async function parsePriceTableFile(formData: FormData) {
             const worksheet = workbook.Sheets[sheetName];
             extractedText = XLSX.utils.sheet_to_csv(worksheet);
         } else if (fileName.endsWith('.pdf')) {
-            // Polyfill DOMMatrix for pdf-parse/pdfjs-dist compatibility in Node.js
-            if (typeof (global as any).DOMMatrix === 'undefined') {
-                const { DOMMatrix } = require('@thednp/dommatrix');
-                (global as any).DOMMatrix = DOMMatrix;
+            // Polyfill DOMMatrix and Path2D for pdf-parse/pdfjs-dist compatibility in Node.js
+            try {
+                if (typeof (global as any).DOMMatrix === 'undefined') {
+                    const DOMMatrix = require('@thednp/dommatrix');
+                    (global as any).DOMMatrix = DOMMatrix.default || DOMMatrix;
+                }
+                if (typeof (global as any).Path2D === 'undefined') {
+                    require('path2d-polyfill');
+                }
+            } catch (e) {
+                console.error("Polyfill error:", e);
             }
 
             const pdf = require('pdf-parse');
