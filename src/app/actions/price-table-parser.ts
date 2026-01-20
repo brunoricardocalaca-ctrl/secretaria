@@ -1,7 +1,6 @@
 "use server";
 
 import * as XLSX from 'xlsx';
-const pdf = require('pdf-parse');
 import { getSystemConfig } from './admin-settings';
 
 export async function parsePriceTableFile(formData: FormData) {
@@ -21,6 +20,8 @@ export async function parsePriceTableFile(formData: FormData) {
             const worksheet = workbook.Sheets[sheetName];
             extractedText = XLSX.utils.sheet_to_csv(worksheet);
         } else if (fileName.endsWith('.pdf')) {
+            // Moved require inside to prevent import-time side effects in production
+            const pdf = require('pdf-parse');
             const data = await pdf(buffer);
             extractedText = data.text;
         } else {
@@ -84,8 +85,6 @@ export async function parsePriceTableFile(formData: FormData) {
 
         try {
             const parsed = JSON.parse(content);
-            // OpenAI might wrap it in a root object like { "priceTable": [...] } or just return the array if prompted
-            // Let's handle both
             const finalData = Array.isArray(parsed) ? parsed : Object.values(parsed)[0];
 
             if (!Array.isArray(finalData)) {
