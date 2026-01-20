@@ -18,7 +18,7 @@ async function getTenantContext() {
     return { tenantId: profile.tenantId, configs: profile.tenant.configs as any };
 }
 
-export async function generateServiceDraft(input: { name?: string, description?: string }) {
+export async function generateServiceDraft(input: any) {
     try {
         const apiKey = await getSystemConfig("openai_api_key");
 
@@ -26,9 +26,21 @@ export async function generateServiceDraft(input: { name?: string, description?:
             return { error: "OpenAI API Key não configurada no Admin Global." };
         }
 
-        const { description, name } = input;
+        console.log("DEBUG: generateServiceDraft RAW input:", JSON.stringify(input));
 
-        if (!description && !name) {
+        let name = "";
+        let description = "";
+
+        if (typeof input === 'string') {
+            description = input;
+        } else if (input && typeof input === 'object') {
+            name = input.name || "";
+            description = input.description || "";
+        }
+
+        console.log("DEBUG: generateServiceDraft PROCESSED input:", { name, description });
+
+        if (!description?.trim() && !name?.trim()) {
             return { error: "Forneça pelo menos o nome ou uma breve descrição para a IA." };
         }
 

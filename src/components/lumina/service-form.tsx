@@ -236,12 +236,14 @@ export function ServiceForm({
     const supabase = createClient();
 
     async function handleGenerateAI() {
+        console.log("DEBUG: handleGenerateAI formData:", formData);
         if (!formData.description && !formData.name) {
             alert("Por favor, preencha o nome ou uma breve descrição do serviço para a IA entender o que criar.");
             return;
         }
 
         setGenerating(true);
+        console.log("DEBUG: Calling generateServiceDraft with:", { name: formData.name, description: formData.description });
         const res = await generateServiceDraft({ name: formData.name, description: formData.description });
         setGenerating(false);
 
