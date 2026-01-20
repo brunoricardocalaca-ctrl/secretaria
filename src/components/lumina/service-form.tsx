@@ -195,7 +195,7 @@ export function ServiceForm({
 
         // Evaluation & Advanced Rules
         hasEvaluation: rules.hasEvaluation || false,
-        evaluationName: rules.evaluationName || "",
+        evaluationName: rules.evaluationName || "Avaliação",
         evaluationDescription: rules.evaluationDescription || "",
         evalIsPaid: rules.evalIsPaid || false,
         evalPrice: rules.evalPrice || "",
@@ -990,35 +990,50 @@ export function ServiceForm({
 
                             {formData.hasEvaluation && (
                                 <div className="space-y-8 p-6 bg-[#0A0A0A] rounded-2xl border border-[#2A2A2A] animate-in slide-in-from-top-4 fade-in duration-500">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <Label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Descrição da Avaliação</Label>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={(e) => { e.preventDefault(); handleGenerateAssessmentAI(); }}
-                                                disabled={generatingAssessment}
-                                                className="h-7 text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-pink-500/20 px-3 rounded-full transition-all hover:scale-105 active:scale-95"
-                                            >
-                                                {generatingAssessment ? (
-                                                    <>
-                                                        <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
-                                                        Criando mágica...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" />
-                                                        Gerar com IA
-                                                    </>
-                                                )}
-                                            </Button>
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <Label className="text-white font-medium">Nome da Avaliação</Label>
+                                            <Input
+                                                value={formData.evaluationName}
+                                                onChange={(e) => setFormData({ ...formData, evaluationName: e.target.value })}
+                                                placeholder="Ex: Avaliação, Consulta Estética, Diagnóstico, etc."
+                                                className="bg-[#121212] border-transparent focus:border-purple-500/50 text-white rounded-xl h-12"
+                                            />
+                                            <p className="text-[10px] text-gray-500 italic">
+                                                Exemplos: Consulta Estética, Diagnóstico do Envelhecimento, Consulta Anti-Pochete, Avaliação Tricoscópica.
+                                            </p>
                                         </div>
-                                        <ExpandableTextarea
-                                            value={formData.evaluationDescription}
-                                            onChange={(e) => setFormData({ ...formData, evaluationDescription: e.target.value })}
-                                            placeholder="Explique como funciona a avaliação (ex: 'Analisamos a pele para determinar o número de sessões')."
-                                            className="bg-[#121212] border-transparent focus:border-purple-500/50 text-white rounded-xl"
-                                        />
+
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Descrição da Avaliação</Label>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(e) => { e.preventDefault(); handleGenerateAssessmentAI(); }}
+                                                    disabled={generatingAssessment}
+                                                    className="h-7 text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-pink-500/20 px-3 rounded-full transition-all hover:scale-105 active:scale-95"
+                                                >
+                                                    {generatingAssessment ? (
+                                                        <>
+                                                            <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                                                            Criando mágica...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" />
+                                                            Gerar com IA
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                            <ExpandableTextarea
+                                                value={formData.evaluationDescription}
+                                                onChange={(e) => setFormData({ ...formData, evaluationDescription: e.target.value })}
+                                                placeholder="Explique como funciona a avaliação (ex: 'Analisamos a pele para determinar o número de sessões')."
+                                                className="bg-[#121212] border-transparent focus:border-purple-500/50 text-white rounded-xl"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-6">
