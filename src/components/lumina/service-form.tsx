@@ -12,7 +12,9 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { BrainCircuit, Flag, MessageCircle, User as UserIcon, Send, Ban, Info, Wand2, Loader2, Camera, RefreshCw, Copy } from "lucide-react";
 import { generateServiceDraft, generateAssessmentDescription } from "@/app/actions/ai-service-generator";
+import { parsePriceTableFile } from "@/app/actions/price-table-parser";
 import { ExpandableTextarea } from "@/components/ui/expandable-textarea";
+import { FileUp, FileSpreadsheet, FileText } from "lucide-react";
 
 // Preview Component defined outside to prevent re-renders
 const PreviewChat = ({ data }: { data: any }) => {
@@ -162,6 +164,7 @@ export function ServiceForm({
     const [generating, setGenerating] = useState(false);
     const [generatingAssessment, setGeneratingAssessment] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [parsingFile, setParsingFile] = useState(false);
 
     const [showImage, setShowImage] = useState(!!service?.imageUrl);
 
@@ -313,6 +316,30 @@ export function ServiceForm({
             alert("Erro no upload: " + error.message);
         } finally {
             setUploading(false);
+        }
+    }
+
+    async function handlePriceTableUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setParsingFile(true);
+        try {
+            const uploadData = new FormData();
+            uploadData.append('file', file);
+
+            const res = await parsePriceTableFile(uploadData);
+            if (res.success) {
+                setFormData(prev => ({ ...prev, priceTableItems: res.data as any }));
+            } else {
+                alert("Erro ao processar tabela: " + res.error);
+            }
+        } catch (error: any) {
+            console.error("Parse error:", error);
+            alert("Erro inesperado: " + error.message);
+        } finally {
+            setParsingFile(false);
+            e.target.value = ""; // Clear input
         }
     }
 
@@ -849,7 +876,50 @@ export function ServiceForm({
                                         )}
 
                                         {formData.pricingModel === 'table' && (
-                                            <div className="space-y-8">
+                                            <div className="space-y-6">
+                                                <div className="bg-[#0A0A0A] p-4 rounded-xl border border-dashed border-purple-500/20">
+                                                    <input
+                                                        type="file"
+                                                        id="price-table-upload"
+                                                        className="hidden"
+                                                        accept=".pdf,.xlsx,.xls"
+                                                        onChange={handlePriceTableUpload}
+                                                    />
+                                                    <div className="flex flex-col items-center gap-2 text-center">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <div className="p-2 bg-purple-500/10 rounded-full">
+                                                                <FileSpreadsheet className="w-5 h-5 text-purple-400" />
+                                                            </div>
+                                                            <div className="p-2 bg-blue-500/10 rounded-full">
+                                                                <FileText className="w-5 h-5 text-blue-400" />
+                                                            </div>
+                                                        </div>
+                                                        <h5 className="text-sm font-medium text-white">Importação Inteligente</h5>
+                                                        <p className="text-xs text-gray-500 mb-4 max-w-[300px]">
+                                                            Economize tempo subindo seu arquivo PDF ou Excel. Nossa IA vai extrair todos os valores pra você.
+                                                        </p>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={() => document.getElementById('price-table-upload')?.click()}
+                                                            disabled={parsingFile}
+                                                            className="bg-[#121212] border-[#222] hover:border-purple-500/50 hover:bg-purple-500/5 text-gray-300 hover:text-purple-400 transition-all px-6 h-11 rounded-xl"
+                                                        >
+                                                            {parsingFile ? (
+                                                                <>
+                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                    Extraindo dados...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <FileUp className="w-4 h-4 mr-2" />
+                                                                    Selecionar Arquivo
+                                                                </>
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+
                                                 {/* Group Loop */}
                                                 {formData.priceTableItems.map((group: any, groupIndex: number) => (
                                                     <div key={groupIndex} className="space-y-4 bg-[#0A0A0A] p-4 rounded-xl border border-[#222]">
