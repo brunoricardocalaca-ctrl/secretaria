@@ -4,7 +4,14 @@ import { PrismaClient } from "@prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
 
-const pool = new Pool({ connectionString });
+if (!connectionString && process.env.NODE_ENV === "production") {
+    throw new Error("DATABASE_URL is missing in production environment");
+}
+
+const pool = new Pool({
+    connectionString,
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+});
 const adapter = new PrismaPg(pool);
 
 const prismaClientSingleton = () => {
