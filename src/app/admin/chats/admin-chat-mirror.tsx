@@ -21,20 +21,20 @@ export function AdminChatMirror({ tenants }: AdminChatMirrorProps) {
     return (
         <div className="flex flex-col h-[calc(100vh-100px)] space-y-4">
             {/* Backdrop / Selector */}
-            <div className="flex items-center justify-between bg-[#121212] p-4 rounded-xl border border-[#1F1F1F]">
+            <div className="glass-card flex items-center justify-between p-4 rounded-xl">
                 <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                         <MessageSquare className="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-medium text-white">Espelhamento de Atendimento</h2>
+                        <h2 className="text-sm font-bold text-white tracking-tight">Espelhamento de Atendimento</h2>
                         <p className="text-xs text-gray-400">Selecione uma empresa para ver o chat dela em tempo real.</p>
                     </div>
                 </div>
 
                 <div className="w-[300px]">
                     <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
-                        <SelectTrigger className="bg-[#050505] border-[#2a2a2a] text-white">
+                        <SelectTrigger className="bg-black/40 border-white/10 text-white focus:ring-amber-500/50">
                             <SelectValue placeholder="Selecione o Cliente..." />
                         </SelectTrigger>
                         <SelectContent className="bg-[#121212] border-[#2a2a2a] text-white">
@@ -49,13 +49,13 @@ export function AdminChatMirror({ tenants }: AdminChatMirrorProps) {
             </div>
 
             {/* Mirror Area */}
-            <div className="flex-1 rounded-2xl overflow-hidden border border-[#1F1F1F] bg-[#050505] relative">
+            <div className="flex-1 glass-card rounded-2xl overflow-hidden relative">
                 {!selectedTenantId ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 space-y-4 bg-[#0a0a0a]">
-                        <div className="w-16 h-16 rounded-full bg-[#121212] flex items-center justify-center border border-[#1F1F1F]">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 space-y-4 bg-black/20">
+                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/5 animate-pulse">
                             <MessageSquare className="w-8 h-8 opacity-20" />
                         </div>
-                        <p>Selecione um cliente acima para carregar as mensagens.</p>
+                        <p className="font-medium">Selecione um cliente acima para carregar as mensagens.</p>
                     </div>
                 ) : (
                     // We key by tenantId to force a full re-mount when tenant changes, ensuring clean state

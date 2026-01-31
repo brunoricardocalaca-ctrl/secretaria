@@ -31,34 +31,34 @@ export default async function AdminTenantsPage() {
                     <p className="text-gray-400 mt-2">Gerencie todas as empresas cadastradas na plataforma.</p>
                 </div>
                 <Link href="/admin/tenants/new">
-                    <Button className="bg-white text-black hover:bg-gray-200">
+                    <Button className="bg-amber-500 text-black hover:bg-amber-600 font-medium">
                         + Novo Cliente (Manual)
                     </Button>
                 </Link>
             </div>
 
-            <div className="rounded-2xl border border-[#1F1F1F] overflow-hidden bg-[#121212]">
+            <div className="glass-card rounded-2xl overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-[#1a1a1a]">
-                        <TableRow className="border-[#2a2a2a] hover:bg-[#1a1a1a]">
-                            <TableHead className="text-gray-400">Empresa</TableHead>
-                            <TableHead className="text-gray-400">Responsável</TableHead>
-                            <TableHead className="text-gray-400">Status</TableHead>
-                            <TableHead className="text-gray-400">Usuários</TableHead>
-                            <TableHead className="text-gray-400">Criado em</TableHead>
-                            <TableHead className="text-right text-gray-400">Ações</TableHead>
+                    <TableHeader className="bg-white/5 border-b border-white/5">
+                        <TableRow className="border-white/5 hover:bg-transparent">
+                            <TableHead className="text-gray-400 font-medium">Empresa</TableHead>
+                            <TableHead className="text-gray-400 font-medium">Responsável</TableHead>
+                            <TableHead className="text-gray-400 font-medium">Status</TableHead>
+                            <TableHead className="text-gray-400 font-medium">Usuários</TableHead>
+                            <TableHead className="text-gray-400 font-medium">Criado em</TableHead>
+                            <TableHead className="text-right text-gray-400 font-medium">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {tenants.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={5} className="h-32 text-center text-gray-500">
+                            <TableRow className="hover:bg-transparent border-white/5">
+                                <TableCell colSpan={6} className="h-32 text-center text-gray-500">
                                     Nenhuma empresa encontrada.
                                 </TableCell>
                             </TableRow>
                         )}
                         {tenants.map((tenant) => (
-                            <TableRow key={tenant.id} className="border-[#2a2a2a] hover:bg-[#1a1a1a]/50">
+                            <TableRow key={tenant.id} className="border-white/5 hover:bg-white/5 transition-colors">
                                 <TableCell>
                                     <div className="flex flex-col">
                                         <span className="font-semibold text-white">{tenant.name}</span>
@@ -133,7 +133,7 @@ export default async function AdminTenantsPage() {
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className="h-8 w-8 text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                                                    className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
                                                     title="Acessar como Usuário"
                                                 >
                                                     <LogIn className="w-4 h-4" />
@@ -141,7 +141,7 @@ export default async function AdminTenantsPage() {
                                             </form>
                                         )}
                                         <Link href={`/admin/tenants/${tenant.id}`}>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-[#2a2a2a]">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10">
                                                 <ExternalLink className="w-4 h-4" />
                                             </Button>
                                         </Link>

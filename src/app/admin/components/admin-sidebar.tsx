@@ -46,13 +46,14 @@ export function AdminSidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="w-64 h-full bg-[#050505] border-r border-[#1F1F1F] flex flex-col">
+        <div className="w-64 h-full glass border-r border-white/5 flex flex-col">
             <div className="p-6">
-                <div className="flex items-center gap-2 mb-8">
-                    <ShieldCheck className="w-6 h-6 text-amber-500" />
-                    <span className="font-bold text-white text-lg tracking-tight">
-                        Lumina <span className="text-amber-500">Admin</span>
-                    </span>
+                <div className="flex items-center gap-1.5 mb-8 px-2">
+                    <div className="flex items-center gap-1.5 font-black text-xl tracking-tighter">
+                        <span className="text-white">NEXUS</span>
+                        <span className="text-amber-500 font-light translate-y-[-1px] text-lg">|</span>
+                        <span className="text-amber-500 font-medium text-sm uppercase tracking-widest ml-1">Admin</span>
+                    </div>
                 </div>
 
                 <nav className="space-y-1">
@@ -63,8 +64,8 @@ export function AdminSidebar() {
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all",
                                 pathname === item.href
-                                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                    : "text-gray-400 hover:text-white hover:bg-[#121212]"
+                                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
+                                    : "text-gray-400 hover:text-white hover:bg-white/5"
                             )}
                         >
                             <item.icon className="w-4 h-4" />

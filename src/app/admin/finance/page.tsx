@@ -67,68 +67,69 @@ export default async function AdminFinancePage() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-[#121212] border-[#1F1F1F]">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400">Receita Recorrente (MRR)</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">
+                <div className="glass-card rounded-2xl p-6 border-l-4 border-l-green-500 ">
+                    <div className="flex items-center justify-between pb-2 mb-2">
+                        <span className="text-sm font-medium text-gray-400">Receita Recorrente (MRR)</span>
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white tracking-tight">
                             {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(revenueValue)}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Baseada nos planos ativos atuais</p>
-                    </CardContent>
-                </Card>
+                        <p className="text-xs text-gray-500 mt-1 font-medium">Baseada nos planos ativos atuais</p>
+                    </div>
+                </div>
 
-                <Card className="bg-[#121212] border-[#1F1F1F]">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400">Pagantes Ativos</CardTitle>
-                        <CreditCard className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">{activeSubs}</div>
-                        <p className="text-xs text-gray-500 mt-1">Clientes com status 'active'</p>
-                    </CardContent>
-                </Card>
+                <div className="glass-card rounded-2xl p-6 border-l-4 border-l-blue-500">
+                    <div className="flex items-center justify-between pb-2 mb-2">
+                        <span className="text-sm font-medium text-gray-400">Pagantes Ativos</span>
+                        <CreditCard className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white tracking-tight">{activeSubs}</div>
+                        <p className="text-xs text-gray-500 mt-1 font-medium">Clientes com status 'active'</p>
+                    </div>
+                </div>
 
-                <Card className="bg-[#121212] border-[#1F1F1F]">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400">Em Atraso (Vencidos)</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">{overdueCount}</div>
-                        <p className="text-xs text-gray-500 mt-1">Vencimentos passados não renovados</p>
-                    </CardContent>
-                </Card>
+                <div className="glass-card rounded-2xl p-6 border-l-4 border-l-red-500">
+                    <div className="flex items-center justify-between pb-2 mb-2">
+                        <span className="text-sm font-medium text-gray-400">Em Atraso (Vencidos)</span>
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold text-white tracking-tight">{overdueCount}</div>
+                        <p className="text-xs text-gray-500 mt-1 font-medium">Vencimentos passados não renovados</p>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Upcoming */}
                 {/* Upcoming */}
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                         <CalendarClock className="w-5 h-5 text-gray-400" />
                         Próximos Vencimentos (30 dias)
                     </h2>
-                    <div className="rounded-2xl border border-[#1F1F1F] overflow-hidden bg-[#121212]">
+                    <div className="glass-card rounded-2xl overflow-hidden">
                         <Table>
-                            <TableHeader className="bg-[#1a1a1a]">
-                                <TableRow className="border-[#2a2a2a]">
-                                    <TableHead className="text-gray-400">Cliente</TableHead>
-                                    <TableHead className="text-gray-400">Valor</TableHead>
-                                    <TableHead className="text-gray-400">Vence em</TableHead>
+                            <TableHeader className="bg-white/5 border-b border-white/5">
+                                <TableRow className="border-white/5 hover:bg-transparent">
+                                    <TableHead className="text-gray-400 font-medium">Cliente</TableHead>
+                                    <TableHead className="text-gray-400 font-medium">Valor</TableHead>
+                                    <TableHead className="text-gray-400 font-medium">Vence em</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {upcomingInvoices.length === 0 && (
-                                    <TableRow>
+                                    <TableRow className="hover:bg-transparent border-white/5">
                                         <TableCell colSpan={3} className="h-24 text-center text-gray-500">
                                             Nenhum vencimento próximo.
                                         </TableCell>
                                     </TableRow>
                                 )}
                                 {upcomingInvoices.map((t) => (
-                                    <TableRow key={t.id} className="border-[#2a2a2a]">
+                                    <TableRow key={t.id} className="border-white/5 hover:bg-white/5 transition-colors">
                                         <TableCell className="font-medium text-white">{t.name}</TableCell>
                                         <TableCell className="text-green-400">
                                             {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(t.planPrice))}
@@ -149,25 +150,25 @@ export default async function AdminFinancePage() {
                         <AlertCircle className="w-5 h-5 text-red-500" />
                         Atenção Necessária
                     </h2>
-                    <div className="rounded-2xl border border-red-900/20 overflow-hidden bg-[#121212]">
+                    <div className="glass-card rounded-2xl overflow-hidden border-red-500/20">
                         <Table>
-                            <TableHeader className="bg-red-950/10">
-                                <TableRow className="border-red-900/20">
-                                    <TableHead className="text-red-300">Cliente</TableHead>
-                                    <TableHead className="text-red-300">Valor</TableHead>
-                                    <TableHead className="text-red-300">Venceu em</TableHead>
+                            <TableHeader className="bg-red-500/5 border-b border-red-500/10">
+                                <TableRow className="border-red-500/10 hover:bg-transparent">
+                                    <TableHead className="text-red-300 font-medium">Cliente</TableHead>
+                                    <TableHead className="text-red-300 font-medium">Valor</TableHead>
+                                    <TableHead className="text-red-300 font-medium">Venceu em</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {overdueTenants.length === 0 && (
-                                    <TableRow>
+                                    <TableRow className="hover:bg-transparent border-red-500/10">
                                         <TableCell colSpan={3} className="h-24 text-center text-gray-500">
                                             Tudo em dia! Nenhum atraso.
                                         </TableCell>
                                     </TableRow>
                                 )}
                                 {overdueTenants.map((t) => (
-                                    <TableRow key={t.id} className="border-red-900/10 hover:bg-red-900/5">
+                                    <TableRow key={t.id} className="border-red-500/10 hover:bg-red-500/5 transition-colors">
                                         <TableCell className="font-medium text-white">{t.name}</TableCell>
                                         <TableCell className="text-red-400">
                                             {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(t.planPrice))}

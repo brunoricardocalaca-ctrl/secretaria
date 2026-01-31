@@ -78,54 +78,45 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
     };
 
     return (
-        <div className="p-8 space-y-8 max-w-4xl">
-            <div>
-                <h1 className="text-3xl font-bold text-white tracking-tight">Configurações da Plataforma</h1>
-                <p className="text-gray-400 mt-2">Defina as integrações globais e padrões do sistema.</p>
-            </div>
-
-            <Card className="bg-[#121212] border-[#1F1F1F]">
-                <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-red-500/10">
-                            <Webhook className="w-5 h-5 text-red-500" />
-                        </div>
-                        <CardTitle className="text-white">n8n - Webhook Padrão</CardTitle>
+            <div className="glass-card rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 rounded-lg border border-red-500/20 bg-red-500/10">
+                        <Webhook className="w-5 h-5 text-red-500" />
                     </div>
-                    <CardDescription className="text-gray-500">
-                        URL utilizada para processamento de filas e automações globais.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                    <h3 className="text-xl font-bold text-white">n8n - Webhook Padrão</h3>
+                </div>
+                <p className="text-gray-500 text-sm mb-6">
+                    URL utilizada para processamento de filas e automações globais.
+                </p>
+                
+                <div className="space-y-4">
                     <div className="space-y-2">
                         <Label className="text-gray-300">Webhook URL (Production)</Label>
                         <Input
                             value={n8nUrl}
                             onChange={e => setN8nUrl(e.target.value)}
-                            className="bg-[#050505] border-[#2a2a2a] text-gray-300"
+                            className="bg-black/50 border-white/10 text-gray-300 focus-visible:ring-amber-500/50"
                             placeholder="https://webhook.n8n.cloud/..."
                         />
                     </div>
-                    <Button onClick={handleSaveN8n} className="bg-red-600 hover:bg-red-700 text-white">
+                    <Button onClick={handleSaveN8n} className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/20">
                         <Save className="w-4 h-4 mr-2" />
                         Salvar Alterações
                     </Button>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            <Card className="bg-[#121212] border-[#1F1F1F]">
-                <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-green-500/10">
-                            <Bot className="w-5 h-5 text-green-500" />
-                        </div>
-                        <CardTitle className="text-white">OpenAI - API Key Global</CardTitle>
+            <div className="glass-card rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 rounded-lg border border-green-500/20 bg-green-500/10">
+                        <Bot className="w-5 h-5 text-green-500" />
                     </div>
-                    <CardDescription className="text-gray-500">
-                        Chave mestra para inteligência artificial (caso o cliente não forneça a dele).
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                    <h3 className="text-xl font-bold text-white">OpenAI - API Key Global</h3>
+                </div>
+                <p className="text-gray-500 text-sm mb-6">
+                    Chave mestra para inteligência artificial (caso o cliente não forneça a dele).
+                </p>
+                <div className="space-y-4">
                     <div className="space-y-2">
                         <Label className="text-gray-300">API Key</Label>
                         <div className="relative">
@@ -133,39 +124,37 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
                                 type="password"
                                 value={openaiKey}
                                 onChange={e => setOpenaiKey(e.target.value)}
-                                className="bg-[#050505] border-[#2a2a2a] text-gray-300 pr-10"
+                                className="bg-black/50 border-white/10 text-gray-300 pr-10 focus-visible:ring-amber-500/50"
                                 placeholder="sk-..."
                             />
                             <Lock className="w-4 h-4 text-gray-500 absolute right-3 top-3" />
                         </div>
                     </div>
-                    <Button onClick={handleSaveOpenAI} className="bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={handleSaveOpenAI} className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/20">
                         <Save className="w-4 h-4 mr-2" />
                         Salvar Chave
                     </Button>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            <Card className="bg-[#121212] border-[#1F1F1F]">
-                <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-purple-500/10">
-                            <Bot className="w-5 h-5 text-purple-500" />
-                        </div>
-                        <CardTitle className="text-white">Prompt do Gerador de Serviços</CardTitle>
+            <div className="glass-card rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 rounded-lg border border-purple-500/20 bg-purple-500/10">
+                        <Bot className="w-5 h-5 text-purple-500" />
                     </div>
-                    <CardDescription className="text-gray-500">
-                        Edite o prompt "system" enviado para a IA ao clicar em "Gerar tudo com IA".
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+                    <h3 className="text-xl font-bold text-white">Prompt do Gerador de Serviços</h3>
+                </div>
+                <p className="text-gray-500 text-sm mb-6">
+                    Edite o prompt "system" enviado para a IA ao clicar em "Gerar tudo com IA".
+                </p>
+                <div className="space-y-6">
                     <div className="space-y-2">
                         <Label className="text-gray-300">Prompt do Servico (Geral - JSON)</Label>
                         <TextInput
                             disabled={loadingPrompt}
                             value={prompt}
                             onChange={e => setPrompt(e.target.value)}
-                            className="bg-[#050505] border-[#2a2a2a] text-gray-300 min-h-[200px] font-mono text-xs"
+                            className="bg-black/50 border-white/10 text-gray-300 min-h-[200px] font-mono text-xs focus-visible:ring-amber-500/50"
                             placeholder="Carregando prompt..."
                         />
                     </div>
@@ -179,7 +168,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
                             disabled={loadingPrompt}
                             value={serviceDescPrompt}
                             onChange={e => setServiceDescPrompt(e.target.value)}
-                            className="bg-[#050505] border-[#2a2a2a] text-gray-300 min-h-[150px] font-mono text-xs"
+                            className="bg-black/50 border-white/10 text-gray-300 min-h-[150px] font-mono text-xs focus-visible:ring-amber-500/50"
                             placeholder="Ex: Use linguagem persuasiva, emojis e bullet points..."
                         />
                     </div>
@@ -193,17 +182,17 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
                             disabled={loadingPrompt}
                             value={assessmentPrompt}
                             onChange={e => setAssessmentPrompt(e.target.value)}
-                            className="bg-[#050505] border-[#2a2a2a] text-gray-300 min-h-[150px] font-mono text-xs"
+                            className="bg-black/50 border-white/10 text-gray-300 min-h-[150px] font-mono text-xs focus-visible:ring-amber-500/50"
                             placeholder="Deixe em branco para usar o padrão do sistema..."
                         />
                     </div>
 
-                    <Button onClick={handleSavePrompt} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Button onClick={handleSavePrompt} className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-900/20">
                         <Save className="w-4 h-4 mr-2" />
                         Salvar Prompts
                     </Button>
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+            </div>
+        </div >
     );
 }

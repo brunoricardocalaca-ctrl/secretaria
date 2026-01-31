@@ -90,14 +90,22 @@ export default async function AdminDashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat) => (
-                    <div key={stat.title} className="bg-[#121212] border border-[#1F1F1F] p-6 rounded-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className={`p-3 rounded-xl ${stat.bg}`}>
-                                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {stats.map((stat) => (
+                            <div key={stat.title} className="glass-card rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/30 transition-all duration-300">
+                                <div className={`absolute top-0 right-0 p-20 rounded-full blur-3xl opacity-5 group-hover:opacity-10 transition-opacity ${stat.color.replace('text-', 'bg-')}`} />
+
+                                <div className="flex items-center justify-between mb-4 relative z-10">
+                                    <div className={`p-3 rounded-xl border border-white/5 ${stat.bg}`}>
+                                        <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                                    </div>
+                                </div>
+                                <div className="relative z-10">
+                                    <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
+                                    <h3 className="text-2xl font-bold text-white mt-1 tracking-tight">{stat.value}</h3>
+                                </div>
                             </div>
-                        </div>
-                        <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                        <h3 className="text-2xl font-bold text-white mt-1">{stat.value}</h3>
+                        ))}
                     </div>
                 ))}
             </div>
@@ -105,37 +113,37 @@ export default async function AdminDashboardPage() {
             {/* Recent Activity Section */}
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-white">Cadastros Recentes</h2>
-                <div className="rounded-2xl border border-[#1F1F1F] overflow-hidden bg-[#121212]">
+                <div className="glass-card rounded-2xl overflow-hidden">
                     <Table>
-                        <TableHeader className="bg-[#1a1a1a]">
-                            <TableRow className="border-[#2a2a2a]">
-                                <TableHead className="text-gray-400">Empresa</TableHead>
-                                <TableHead className="text-gray-400">E-mail</TableHead>
-                                <TableHead className="text-gray-400">Plano</TableHead>
-                                <TableHead className="text-gray-400">Valor</TableHead>
-                                <TableHead className="text-gray-400">Data</TableHead>
-                                <TableHead className="text-right text-gray-400">Ações</TableHead>
+                        <TableHeader className="bg-white/5 border-b border-white/5">
+                            <TableRow className="border-white/5 hover:bg-transparent">
+                                <TableHead className="text-gray-400 font-medium">Empresa</TableHead>
+                                <TableHead className="text-gray-400 font-medium">E-mail</TableHead>
+                                <TableHead className="text-gray-400 font-medium">Plano</TableHead>
+                                <TableHead className="text-gray-400 font-medium">Valor</TableHead>
+                                <TableHead className="text-gray-400 font-medium">Data</TableHead>
+                                <TableHead className="text-right text-gray-400 font-medium">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {recentTenants.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-24 text-center text-gray-500">
+                                <TableRow className="hover:bg-transparent border-white/5">
+                                    <TableCell colSpan={6} className="h-24 text-center text-gray-500">
                                         Nenhuma atividade recente.
                                     </TableCell>
                                 </TableRow>
                             )}
                             {recentTenants.map((t) => (
-                                <TableRow key={t.id} className="border-[#2a2a2a]">
+                                <TableRow key={t.id} className="border-white/5 hover:bg-white/5 transition-colors">
                                     <TableCell className="font-medium text-white">{t.name}</TableCell>
                                     <TableCell className="text-gray-400 text-xs">{t.ownerEmail || '-'}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className={
                                             t.planStatus === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                                 t.planStatus === 'inactive' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                                    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                                    'bg-amber-500/10 text-amber-400 border-amber-500/20'
                                         }>
-                                            {t.planStatus}
+                                            {t.planStatus === 'trial' ? 'TRIAL' : t.planStatus.toUpperCase()}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-gray-300">
@@ -150,7 +158,7 @@ export default async function AdminDashboardPage() {
                                                 "use server";
                                                 await impersonateAction(t.ownerEmail!);
                                             }}>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-[#2a2a2a]" title="Acessar como Usuário">
+                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10" title="Acessar como Usuário">
                                                     <LogIn className="w-4 h-4" />
                                                 </Button>
                                             </form>
