@@ -26,6 +26,15 @@ export async function GET(request: Request) {
         }
     }
 
+    // Check for upstream errors from Supabase (e.g. link expired, bad redirect)
+    const upstreamError = searchParams.get("error");
+    const upstreamErrorDesc = searchParams.get("error_description");
+
+    if (upstreamError || upstreamErrorDesc) {
+        console.error("Supabase Upstream Error:", upstreamError, upstreamErrorDesc);
+        return NextResponse.redirect(`${origin}/login?error=auth&error_description=${encodeURIComponent(upstreamErrorDesc || upstreamError || "Unknown upstream error")}`);
+    }
+
     // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/login?error=auth&error_code=${code ? 'exchange_failed' : 'no_code'}`);
+    return NextResponse.redirect(`${origin}/login?error=auth&error_code=no_code_detected`);
 }
