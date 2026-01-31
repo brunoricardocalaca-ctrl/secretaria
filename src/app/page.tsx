@@ -15,10 +15,12 @@ import {
   MessageSquare
 } from "lucide-react";
 import Image from "next/image";
+import AuthRedirectHandler from "./auth-redirect-handler";
 
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans selection:bg-purple-500/30">
+      <AuthRedirectHandler />
 
       {/* Navbar */}
       <header className="fixed top-0 w-full z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
