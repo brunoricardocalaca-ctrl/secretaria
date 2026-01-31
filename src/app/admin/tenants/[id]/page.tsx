@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Trash2, CheckCircle2, Shield, User, XCircle } from "lucide-react";
 import { TenantForm } from "./tenant-form";
-import { activateTenantAction, deleteTenantAction, updateUserRoleAction, impersonateAction, addUserAction, deleteUserAction, resetUserPasswordAction } from "@/app/actions/admin";
+import { AddUserForm } from "./add-user-form";
+import { activateTenantAction, deleteTenantAction, updateUserRoleAction, impersonateAction, deleteUserAction, resetUserPasswordAction } from "@/app/actions/admin";
 import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -72,22 +73,7 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                                 <p className="text-gray-400 text-sm">Gerencie quem pode acessar esta conta.</p>
                             </div>
 
-                            <form action={async (formData) => {
-                                "use server";
-                                const email = formData.get("email") as string;
-                                if (email) await addUserAction(tenant.id, email);
-                            }} className="flex w-full sm:w-auto gap-2 bg-[#0A0A0A] p-1.5 rounded-lg border border-white/10">
-                                <Input
-                                    name="email"
-                                    type="email"
-                                    placeholder="Novo e-mail..."
-                                    className="bg-transparent border-none text-white h-8 w-full sm:w-[220px] text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-600"
-                                    required
-                                />
-                                <Button size="sm" type="submit" className="bg-amber-500 hover:bg-amber-600 h-8 text-black font-semibold px-4 rounded-md transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)]">
-                                    <Plus className="w-3.5 h-3.5 mr-1.5" /> Convidar
-                                </Button>
-                            </form>
+                            <AddUserForm tenantId={tenant.id} />
                         </div>
 
                         <div className="p-0">
