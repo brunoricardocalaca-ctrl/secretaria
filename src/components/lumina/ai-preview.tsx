@@ -69,7 +69,7 @@ export function AIPreview() {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline" className="hidden md:flex gap-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:text-white rounded-full ml-4 cursor-pointer">
+                <Button variant="outline" className="hidden md:flex gap-2 border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:text-white rounded-full ml-4 cursor-pointer">
                     <Sparkles className="w-4 h-4" />
                     Testar IA
                 </Button>
@@ -78,7 +78,7 @@ export function AIPreview() {
                 <SheetHeader className="p-4 border-b border-[#1F1F1F] bg-[#121212]">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div>
@@ -118,15 +118,15 @@ export function AIPreview() {
                             )}>
                                 <div className={cn(
                                     "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                                    msg.role === 'user' ? "bg-[#2a2a2a]" : "bg-purple-500/20"
+                                    msg.role === 'user' ? "bg-[#2a2a2a]" : "bg-amber-500/20"
                                 )}>
-                                    {msg.role === 'user' ? <User className="w-4 h-4 text-gray-400" /> : <Bot className="w-4 h-4 text-purple-400" />}
+                                    {msg.role === 'user' ? <User className="w-4 h-4 text-gray-400" /> : <Bot className="w-4 h-4 text-amber-400" />}
                                 </div>
                                 <div className={cn(
                                     "p-3 rounded-2xl text-sm leading-relaxed",
                                     msg.role === 'user'
                                         ? "bg-[#2a2a2a] text-gray-200 rounded-tr-none"
-                                        : "bg-purple-500/10 text-purple-100 border border-purple-500/20 rounded-tl-none whitespace-pre-wrap"
+                                        : "bg-amber-500/10 text-amber-100 border border-amber-500/20 rounded-tl-none whitespace-pre-wrap"
                                 )}>
                                     {msg.text}
                                 </div>
@@ -156,13 +156,13 @@ export function AIPreview() {
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder="Mande uma mensagem..."
-                            className="bg-[#0A0A0A] border-[#2a2a2a] text-white rounded-full focus:ring-purple-500/50"
+                            className="bg-[#0A0A0A] border-[#2a2a2a] text-white rounded-full focus:ring-amber-500/50"
                         />
                         <Button
                             onClick={handleSend}
                             disabled={loading || !input.trim()}
                             size="icon"
-                            className="bg-purple-600 hover:bg-purple-700 text-white rounded-full w-10 h-10 shrink-0 cursor-pointer"
+                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-full w-10 h-10 shrink-0 cursor-pointer"
                         >
                             <Send className="w-4 h-4" />
                         </Button>

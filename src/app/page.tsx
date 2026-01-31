@@ -23,8 +23,10 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="fixed top-0 w-full z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="font-bold text-xl tracking-tighter bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-            secretar.ia
+          <div className="flex items-center gap-1.5 font-black text-2xl tracking-tighter">
+            <span className="text-white">NEXUS</span>
+            <span className="text-amber-500 font-light translate-y-[-1px] text-xl">|</span>
+            <span className="text-amber-500 font-medium text-lg uppercase tracking-widest ml-1">secretar.ia</span>
           </div>
           <div className="flex items-center gap-6">
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-white/60">
@@ -58,15 +60,15 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
-            Humana demais para ser robô. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-400 to-purple-400 animate-gradient">
-              Rápida demais para ser humana.
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
+            <span className="text-white">NEXUS</span> <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-500 to-amber-200 animate-gradient font-bold uppercase tracking-[0.2em] text-4xl md:text-5xl lg:text-6xl block mt-4">
+              secretar.ia
             </span>
           </h1>
 
           <p className="text-lg md:text-xl text-white/60 mb-10 max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-            A secretar.ia não concorre com chatbot ou IA genérica. <br className="hidden md:block" />
+            A <strong>Nexus | Secretar.ia</strong> não concorre com chatbot ou IA genérica. <br className="hidden md:block" />
             Ela opera em um nível acima: <strong>atendimento clínico de precisão, em tempo real, 24/7.</strong>
           </p>
 
@@ -130,9 +132,9 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-16 text-center max-w-4xl mx-auto p-8 rounded-2xl bg-gradient-to-r from-purple-900/10 via-purple-900/5 to-purple-900/10 border border-purple-500/20 backdrop-blur-sm">
-            <p className="text-xl md:text-2xl text-purple-100 leading-relaxed font-light">
-              "A <strong>secretar.ia</strong> elimina as limitações do humano e as fraquezas da IA genérica, entregando um nível de atendimento que nenhum dos dois alcança."
+          <div className="mt-16 text-center max-w-4xl mx-auto p-8 rounded-2xl bg-gradient-to-r from-amber-900/10 via-amber-900/5 to-amber-900/10 border border-amber-500/20 backdrop-blur-sm">
+            <p className="text-xl md:text-2xl text-amber-100 leading-relaxed font-light">
+              "A <strong>Nexus | Secretar.ia</strong> elimina as limitações do humano e as fraquezas da IA genérica, entregando um nível de atendimento que nenhum dos dois alcança."
             </p>
           </div>
         </div>
@@ -152,7 +154,7 @@ export default function LandingPage() {
                   IA
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white">secretar.ia</div>
+                  <div className="text-sm font-bold text-white tracking-tighter">NEXUS | <span className="text-amber-500 font-medium">SECRETAR.IA</span></div>
                   <div className="text-xs text-green-400 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
                     Online agora

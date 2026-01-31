@@ -14,15 +14,18 @@ export default function RegisterPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
-            <div className="absolute top-8 left-8 flex items-center gap-2">
-                <Bot className="h-6 w-6 text-primary" />
-                <span className="text-lg font-bold">Lumina</span>
+            <div className="absolute top-8 left-8 flex flex-col items-start leading-none group cursor-pointer">
+                <div className="flex items-center gap-1.5 font-black text-xl tracking-tighter">
+                    <span className="text-white">NEXUS</span>
+                    <span className="text-amber-500 font-light translate-y-[-1px] text-lg">|</span>
+                    <span className="text-amber-500 font-medium text-sm uppercase tracking-widest ml-1">secretar.ia</span>
+                </div>
             </div>
 
             <Card className="w-full max-w-sm border-border/50 bg-card/50 backdrop-blur-xl">
                 <CardHeader>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary font-medium flex items-center gap-1">
+                        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-500 font-medium flex items-center gap-1 border border-amber-500/20">
                             <Sparkles className="w-3 h-3" /> Teste Grátis
                         </span>
                     </div>
@@ -48,10 +51,12 @@ export default function RegisterPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                        <Button className="w-full bg-primary hover:bg-primary/90">Começar Agora</Button>
+                        <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-lg shadow-amber-900/20">
+                            Começar Agora
+                        </Button>
                         <div className="text-center text-sm text-muted-foreground">
                             Já tem uma conta?{" "}
-                            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                            <Link href="/login" className="underline underline-offset-4 hover:text-amber-500 transition-colors">
                                 Entrar
                             </Link>
                         </div>

@@ -12,7 +12,7 @@
   --color-popover: hsl(240 10% 3.9%);
   --color-popover-foreground: hsl(0 0% 98%);
 
-  --color-primary: hsl(263 70% 50%);
+  --color-primary: hsl(45 93% 47%);
   --color-primary-foreground: hsl(210 40% 98%);
 
   --color-secondary: hsl(240 3.7% 15.9%);
@@ -29,7 +29,7 @@
 
   --color-border: hsl(240 3.7% 15.9%);
   --color-input: hsl(240 3.7% 15.9%);
-  --color-ring: hsl(263 70% 50%);
+  --color-ring: hsl(45 93% 47%);
 
   --radius: 0.5rem;
 
@@ -103,11 +103,11 @@ body {
 }
 
 .premium-gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-100 to-gray-400;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-100 to-gray-400;
 }
 
-.glow-purple {
-  box-shadow: 0 0 20px -5px rgba(124, 58, 237, 0.3);
+.glow-amber {
+  box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.3);
 }
 
 /* Custom Scrollbar */

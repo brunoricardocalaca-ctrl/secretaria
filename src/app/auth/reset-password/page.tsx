@@ -13,6 +13,13 @@ export default function ResetPasswordPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
+            <div className="absolute top-8 left-8 flex flex-col items-start leading-none group cursor-default">
+                <div className="flex items-center gap-1.5 font-black text-xl tracking-tighter text-white">
+                    <span>NEXUS</span>
+                    <span className="text-amber-500 font-light translate-y-[-1px] text-lg">|</span>
+                    <span className="text-amber-500 font-medium text-sm uppercase tracking-widest ml-1">secretar.ia</span>
+                </div>
+            </div>
             <Card className="w-full max-w-sm border-border/50 bg-card/50 backdrop-blur-xl">
                 <CardHeader>
                     <CardTitle className="text-2xl">Nova Senha</CardTitle>
@@ -37,7 +44,7 @@ export default function ResetPasswordPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full bg-primary hover:bg-primary/90">
+                        <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold">
                             <Lock className="mr-2 h-4 w-4" /> Atualizar Senha
                         </Button>
                     </CardFooter>

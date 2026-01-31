@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "sua_secretar.ia | Automação e Inteligência",
-  description: "SaaS de automação inteligente para clínicas e negócios.",
+  title: "Nexus | Secretar.ia",
+  description: "Plataforma de inteligência e automação clínica Nexus.",
 };
 
 export default function RootLayout({

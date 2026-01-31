@@ -12,8 +12,8 @@ export default async function DashboardHome() {
             {/* Top Section: Title & Actions */}
             <div className="rounded-2xl bg-[#1c1c1c] border border-[#2a2a2a] p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
                 <div className="flex items-start gap-4">
-                    <div className="p-3 bg-purple-600/10 rounded-2xl border border-purple-500/20 shadow-inner">
-                        <Bot className="w-8 h-8 text-purple-500" />
+                    <div className="p-3 bg-amber-600/10 rounded-2xl border border-amber-500/20 shadow-inner">
+                        <Bot className="w-8 h-8 text-amber-500" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">Painel IA</h1>
@@ -42,7 +42,7 @@ export default async function DashboardHome() {
                     title="Respostas da IA"
                     value={stats.totalSentByAI}
                     icon={Bot}
-                    iconColorClass="bg-purple-600 shadow-purple-900/20"
+                    iconColorClass="bg-amber-600 shadow-amber-900/20"
                     footer="Interações respondidas pela IA"
                 />
                 <KPICard
@@ -56,7 +56,7 @@ export default async function DashboardHome() {
                     title="Custo Evitado"
                     value={stats.avoidedCostFormatted}
                     icon={DollarSign}
-                    iconColorClass="bg-pink-600 shadow-pink-900/20"
+                    iconColorClass="bg-amber-500 shadow-amber-900/20"
                     footer="Economia estimada (Humano)"
                 />
             </div>

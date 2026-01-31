@@ -14,6 +14,13 @@ export default function ForgotPasswordPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
+            <div className="absolute top-8 left-8 flex flex-col items-start leading-none group cursor-default">
+                <div className="flex items-center gap-1.5 font-black text-xl tracking-tighter text-white">
+                    <span>NEXUS</span>
+                    <span className="text-amber-500 font-light translate-y-[-1px] text-lg">|</span>
+                    <span className="text-amber-500 font-medium text-sm uppercase tracking-widest ml-1">secretar.ia</span>
+                </div>
+            </div>
             <Card className="w-full max-w-sm border-border/50 bg-card/50 backdrop-blur-xl">
                 <CardHeader>
                     <CardTitle className="text-2xl">Recuperar Senha</CardTitle>
@@ -39,10 +46,10 @@ export default function ForgotPasswordPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                        <Button className="w-full">
+                        <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold">
                             <Mail className="mr-2 h-4 w-4" /> Enviar Link
                         </Button>
-                        <Link href="/login" className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        <Link href="/login" className="flex items-center text-sm text-muted-foreground hover:text-amber-500 transition-colors">
                             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para o Login
                         </Link>
                     </CardFooter>
