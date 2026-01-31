@@ -177,9 +177,7 @@ export async function addUserAction(tenantId: string, email: string) {
 
     try {
         const supabaseAdmin = createAdminClient();
-        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`
-        });
+        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
         if (inviteError) {
             // Check if user already exists
