@@ -142,12 +142,28 @@ export async function deleteUserAction(profileId: string) {
     if (!adminUser) return { error: "Não autenticado" };
 
     try {
+        // Get user ID before deleting profile
+        const profile = await prisma.profile.findUnique({
+            where: { id: profileId },
+            select: { userId: true }
+        });
+
+        if (profile?.userId) {
+            try {
+                const supabaseAdmin = createAdminClient();
+                await supabaseAdmin.auth.admin.deleteUser(profile.userId);
+            } catch (authError: any) {
+                console.error("Error deleting from Supabase Auth:", authError.message);
+                // Continue to delete from Prisma even if Auth delete fails (or user logic)
+            }
+        }
+
         await prisma.profile.delete({
             where: { id: profileId }
         });
 
         revalidatePath("/admin/tenants");
-        return { success: "Usuário removido do sistema." };
+        return { success: "Usuário removido do sistema (Auth + Dados)." };
     } catch (e: any) {
         return { error: e.message };
     }
@@ -161,7 +177,9 @@ export async function addUserAction(tenantId: string, email: string) {
 
     try {
         const supabaseAdmin = createAdminClient();
-        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`
+        });
 
         if (inviteError) {
             // Check if user already exists
@@ -298,7 +316,9 @@ export async function createTenantManualAction(formData: FormData) {
                 }
 
                 const supabaseAdmin = createAdminClient();
-                const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(ownerEmail);
+                const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(ownerEmail, {
+                    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`
+                });
 
                 let userId: string | undefined;
 
