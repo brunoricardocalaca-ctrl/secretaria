@@ -196,6 +196,45 @@ export async function addUserAction(tenantId: string, email: string) {
     }
 }
 
+export async function resetUserPasswordAction(profileId: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    const adminProfile = await prisma.profile.findUnique({
+        where: { userId: adminUser.id },
+        select: { role: true }
+    });
+
+    if (adminProfile?.role !== 'super_admin') {
+        return { error: "Acesso negado." };
+    }
+
+    try {
+        // Get the target user's userId from profile
+        const targetProfile = await prisma.profile.findUnique({
+            where: { id: profileId },
+            select: { userId: true }
+        });
+
+        if (!targetProfile) return { error: "Usuário não encontrado." };
+
+        const supabaseAdmin = createAdminClient();
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(
+            targetProfile.userId,
+            { password: '123mudar?' }
+        );
+
+        if (error) throw error;
+
+        return { success: "Senha resetada para '123mudar?'" };
+    } catch (e: any) {
+        console.error("Password reset error:", e);
+        return { error: e.message || "Erro ao resetar senha." };
+    }
+}
+
 export async function createTenantManualAction(formData: FormData) {
     const name = formData.get("name") as string;
     const slug = formData.get("slug") as string;

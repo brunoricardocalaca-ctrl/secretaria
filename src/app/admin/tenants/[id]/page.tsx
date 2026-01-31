@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Trash2, CheckCircle2, Shield, User, XCircle } from "lucide-react";
 import { TenantForm } from "./tenant-form";
-import { activateTenantAction, deleteTenantAction, updateUserRoleAction, impersonateAction, addUserAction, deleteUserAction } from "@/app/actions/admin";
+import { activateTenantAction, deleteTenantAction, updateUserRoleAction, impersonateAction, addUserAction, deleteUserAction, resetUserPasswordAction } from "@/app/actions/admin";
 import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { LogIn, Plus } from "lucide-react";
+import { LogIn, Plus, Lock } from "lucide-react";
 
 export default async function AdminTenantDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -102,8 +102,19 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                                                 "use server";
                                                 await impersonateAction(u.email);
                                             }}>
-                                                <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white h-8 px-2" title="Acessar Dashboard">
-                                                    <LogIn className="w-4 h-4" />
+                                                <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white h-7 w-7" title="Acessar Dashboard">
+                                                    <LogIn className="w-3.5 h-3.5" />
+                                                </Button>
+                                            </form>
+
+                                            <form action={async () => {
+                                                "use server";
+                                                if (confirm("Resetar senha para '123mudar?'?")) {
+                                                    await resetUserPasswordAction(u.id);
+                                                }
+                                            }}>
+                                                <Button size="icon" variant="ghost" className="text-gray-400 hover:text-yellow-400 h-7 w-7" title="Resetar Senha (123mudar?)">
+                                                    <Lock className="w-3.5 h-3.5" />
                                                 </Button>
                                             </form>
 
