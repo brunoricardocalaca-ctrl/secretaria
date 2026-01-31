@@ -53,6 +53,28 @@ export function TenantForm({ tenant }: { tenant: any }) {
                         </Select>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-gray-300">Preço do Plano (R$)</Label>
+                            <Input
+                                name="planPrice"
+                                type="number"
+                                step="0.01"
+                                defaultValue={tenant.planPrice?.toString() || "297.00"}
+                                className="bg-[#050505] border-[#2a2a2a] text-white"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-gray-300">Próximo Vencimento</Label>
+                            <Input
+                                name="nextBillingDate"
+                                type="date"
+                                defaultValue={tenant.nextBillingDate ? new Date(tenant.nextBillingDate).toISOString().split('T')[0] : ""}
+                                className="bg-[#050505] border-[#2a2a2a] text-white"
+                            />
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <Label className="text-gray-300">Webhook n8n (Override)</Label>
                         <Input

@@ -2,7 +2,8 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ExternalLink, Calendar, Users as UsersIcon } from "lucide-react";
+import { MoreHorizontal, ExternalLink, Calendar, Users as UsersIcon, Mail, Phone, CheckCircle2, LogIn } from "lucide-react";
+import { activateTenantAction, impersonateAction } from "@/app/actions/admin";
 import {
     Table,
     TableBody,
@@ -41,6 +42,7 @@ export default async function AdminTenantsPage() {
                     <TableHeader className="bg-[#1a1a1a]">
                         <TableRow className="border-[#2a2a2a] hover:bg-[#1a1a1a]">
                             <TableHead className="text-gray-400">Empresa</TableHead>
+                            <TableHead className="text-gray-400">Responsável</TableHead>
                             <TableHead className="text-gray-400">Status</TableHead>
                             <TableHead className="text-gray-400">Usuários</TableHead>
                             <TableHead className="text-gray-400">Criado em</TableHead>
@@ -61,6 +63,25 @@ export default async function AdminTenantsPage() {
                                     <div className="flex flex-col">
                                         <span className="font-semibold text-white">{tenant.name}</span>
                                         <span className="text-xs text-gray-500">/{tenant.slug}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col gap-1">
+                                        {tenant.ownerEmail && (
+                                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                                                <Mail className="w-3 h-3" />
+                                                {tenant.ownerEmail}
+                                            </div>
+                                        )}
+                                        {tenant.ownerPhone && (
+                                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                                                <Phone className="w-3 h-3" />
+                                                {tenant.ownerPhone}
+                                            </div>
+                                        )}
+                                        {!tenant.ownerEmail && !tenant.ownerPhone && (
+                                            <span className="text-xs text-gray-600 italic">Sem contato</span>
+                                        )}
                                     </div>
                                 </TableCell>
                                 <TableCell>
@@ -88,11 +109,43 @@ export default async function AdminTenantsPage() {
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Link href={`/admin/tenants/${tenant.id}`}>
-                                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-[#2a2a2a]">
-                                            <ExternalLink className="w-4 h-4" />
-                                        </Button>
-                                    </Link>
+                                    <div className="flex items-center justify-end gap-2">
+                                        {tenant.planStatus === 'trial' && (
+                                            <form action={async () => {
+                                                "use server";
+                                                await activateTenantAction(tenant.id);
+                                            }}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20 hover:text-green-300"
+                                                >
+                                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                                    Liberar
+                                                </Button>
+                                            </form>
+                                        )}
+                                        {tenant.ownerEmail && (
+                                            <form action={async () => {
+                                                "use server";
+                                                await impersonateAction(tenant.ownerEmail!);
+                                            }}>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-8 w-8 text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                                                    title="Acessar como Usuário"
+                                                >
+                                                    <LogIn className="w-4 h-4" />
+                                                </Button>
+                                            </form>
+                                        )}
+                                        <Link href={`/admin/tenants/${tenant.id}`}>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-[#2a2a2a]">
+                                                <ExternalLink className="w-4 h-4" />
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

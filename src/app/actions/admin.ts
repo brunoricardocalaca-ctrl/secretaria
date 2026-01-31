@@ -3,12 +3,16 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export async function updateTenantAction(formData: FormData) {
     const tenantId = formData.get("tenantId") as string;
     const name = formData.get("name") as string;
     const planStatus = formData.get("planStatus") as string;
     const n8nWebhookUrl = formData.get("n8nWebhookUrl") as string;
+    const planPrice = formData.get("planPrice") as string;
+    const nextBillingDate = formData.get("nextBillingDate") as string;
 
     if (!tenantId) return { error: "Tenant ID required" };
 
@@ -25,6 +29,8 @@ export async function updateTenantAction(formData: FormData) {
             data: {
                 name,
                 planStatus,
+                planPrice: planPrice ? parseFloat(planPrice) : undefined,
+                nextBillingDate: nextBillingDate ? new Date(nextBillingDate) : undefined,
                 configs: {
                     ...currentConfigs,
                     n8nWebhookUrl: n8nWebhookUrl || undefined
@@ -36,6 +42,155 @@ export async function updateTenantAction(formData: FormData) {
         revalidatePath("/admin/tenants");
         return { success: "Empresa atualizada com sucesso!" };
 
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function activateTenantAction(tenantId: string) {
+    try {
+        await prisma.tenant.update({
+            where: { id: tenantId },
+            data: {
+                planStatus: "active",
+                setupCompleted: true, // Auto-complete setup on release
+                nextBillingDate: new Date(new Date().setMonth(new Date().getMonth() + 1)) // 1 month from now
+            }
+        });
+
+        revalidatePath(`/admin/tenants/${tenantId}`);
+        revalidatePath("/admin/tenants");
+        return { success: "Conta liberada com sucesso!" };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function updateUserRoleAction(profileId: string, role: string) {
+    try {
+        await prisma.profile.update({
+            where: { id: profileId },
+            data: { role }
+        });
+
+        revalidatePath(`/admin/tenants`); // Revalidate list/details
+        return { success: "Cargo atualizado!" };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function deleteTenantAction(tenantId: string) {
+    try {
+        // Prisma cascade should handle everything
+        await prisma.tenant.delete({
+            where: { id: tenantId }
+        });
+
+        revalidatePath("/admin/tenants");
+        return { success: "Empresa excluída permanentemente." };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function impersonateAction(email: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    const adminProfile = await prisma.profile.findUnique({
+        where: { userId: adminUser.id },
+        select: { role: true }
+    });
+
+    if (adminProfile?.role !== 'super_admin') {
+        return { error: "Acesso negado. Apenas super admins podem acessar contas." };
+    }
+
+    try {
+        const supabaseAdmin = createAdminClient();
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email,
+            options: {
+                redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`
+            }
+        });
+
+        if (error) throw error;
+
+        // Use direct link redirect
+        return redirect(data.properties.action_link);
+    } catch (e: any) {
+        console.error("Impersonation error:", e);
+        return { error: e.message || "Erro ao gerar link de acesso." };
+    }
+}
+
+export async function deleteUserAction(profileId: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    try {
+        await prisma.profile.delete({
+            where: { id: profileId }
+        });
+
+        revalidatePath("/admin/tenants");
+        return { success: "Usuário removido do sistema." };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function addUserAction(tenantId: string, email: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    try {
+        const supabaseAdmin = createAdminClient();
+        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+
+        if (inviteError) {
+            // Check if user already exists
+            const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
+            const existingUser = userData.users.find(u => u.email === email);
+
+            if (existingUser) {
+                // Link existing user to this tenant
+                await prisma.profile.create({
+                    data: {
+                        userId: existingUser.id,
+                        email,
+                        role: 'user',
+                        tenantId
+                    }
+                });
+                revalidatePath("/admin/tenants");
+                return { success: "Usuário existente vinculado à empresa." };
+            }
+            throw inviteError;
+        }
+
+        if (inviteData.user) {
+            await prisma.profile.create({
+                data: {
+                    userId: inviteData.user.id,
+                    email,
+                    role: 'user',
+                    tenantId
+                }
+            });
+        }
+
+        revalidatePath("/admin/tenants");
+        return { success: "Convite enviado e usuário criado!" };
     } catch (e: any) {
         return { error: e.message };
     }

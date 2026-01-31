@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
-import { DollarSign, Users, Building2, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, Users, Building2, TrendingUp, Calendar, LogIn } from "lucide-react";
+import { impersonateAction } from "@/app/actions/admin";
+import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
@@ -45,7 +47,7 @@ export default async function AdminDashboardPage() {
     const recentTenants = await prisma.tenant.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
-        select: { id: true, name: true, planStatus: true, createdAt: true, planPrice: true }
+        select: { id: true, name: true, planStatus: true, createdAt: true, planPrice: true, ownerEmail: true }
     });
 
     const stats = [
@@ -108,9 +110,11 @@ export default async function AdminDashboardPage() {
                         <TableHeader className="bg-[#1a1a1a]">
                             <TableRow className="border-[#2a2a2a]">
                                 <TableHead className="text-gray-400">Empresa</TableHead>
+                                <TableHead className="text-gray-400">E-mail</TableHead>
                                 <TableHead className="text-gray-400">Plano</TableHead>
                                 <TableHead className="text-gray-400">Valor</TableHead>
                                 <TableHead className="text-gray-400">Data</TableHead>
+                                <TableHead className="text-right text-gray-400">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -124,6 +128,7 @@ export default async function AdminDashboardPage() {
                             {recentTenants.map((t) => (
                                 <TableRow key={t.id} className="border-[#2a2a2a]">
                                     <TableCell className="font-medium text-white">{t.name}</TableCell>
+                                    <TableCell className="text-gray-400 text-xs">{t.ownerEmail || '-'}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className={
                                             t.planStatus === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
@@ -138,6 +143,18 @@ export default async function AdminDashboardPage() {
                                     </TableCell>
                                     <TableCell className="text-gray-500 text-xs">
                                         {new Date(t.createdAt).toLocaleDateString()}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {t.ownerEmail && (
+                                            <form action={async () => {
+                                                "use server";
+                                                await impersonateAction(t.ownerEmail!);
+                                            }}>
+                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-[#2a2a2a]" title="Acessar como Usuário">
+                                                    <LogIn className="w-4 h-4" />
+                                                </Button>
+                                            </form>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

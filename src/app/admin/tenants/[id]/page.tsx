@@ -2,8 +2,13 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, CheckCircle2, Shield, User, XCircle } from "lucide-react";
 import { TenantForm } from "./tenant-form";
+import { activateTenantAction, deleteTenantAction, updateUserRoleAction, impersonateAction, addUserAction, deleteUserAction } from "@/app/actions/admin";
+import { Badge } from "@/components/ui/badge";
+import { redirect } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { LogIn, Plus } from "lucide-react";
 
 export default async function AdminTenantDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -28,10 +33,30 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                 <div>
                     <div className="flex items-center gap-3">
                         <h1 className="text-3xl font-bold text-white tracking-tight">{tenant.name}</h1>
-                        <span className="text-gray-500 text-sm">#{tenant.id.slice(0, 8)}</span>
+                        <Badge variant="outline" className={`
+                            ${tenant.planStatus === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' : ''}
+                            ${tenant.planStatus === 'trial' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : ''}
+                            ${tenant.planStatus === 'inactive' ? 'bg-red-500/10 text-red-400 border-red-500/20' : ''}
+                        `}>
+                            {tenant.planStatus.toUpperCase()}
+                        </Badge>
                     </div>
                     <p className="text-gray-400 mt-1">Gerencie os detalhes e o plano desta conta.</p>
                 </div>
+
+                {tenant.planStatus === 'trial' && (
+                    <div className="ml-auto">
+                        <form action={async () => {
+                            "use server";
+                            await activateTenantAction(tenant.id);
+                        }}>
+                            <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                <CheckCircle2 className="w-4 h-4 mr-2" />
+                                Liberar Conta
+                            </Button>
+                        </form>
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -40,22 +65,82 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                     <TenantForm tenant={tenant} />
 
                     <Card className="bg-[#121212] border-[#1F1F1F]">
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-white">Usuários com Acesso</CardTitle>
+                            <form action={async (formData) => {
+                                "use server";
+                                const email = formData.get("email") as string;
+                                if (email) await addUserAction(tenant.id, email);
+                            }} className="flex gap-2">
+                                <Input
+                                    name="email"
+                                    type="email"
+                                    placeholder="e-mail do novo usuário"
+                                    className="bg-[#050505] border-[#2a2a2a] text-white h-8 w-[200px] text-xs"
+                                    required
+                                />
+                                <Button size="sm" type="submit" className="bg-red-600 hover:bg-red-700 h-8 text-xs">
+                                    <Plus className="w-3 h-3 mr-1" /> Invitar
+                                </Button>
+                            </form>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
                                 {tenant.users.map(u => (
                                     <div key={u.id} className="flex items-center justify-between p-3 rounded-lg bg-[#050505] border border-[#2a2a2a]">
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-200 text-sm">{u.email}</span>
-                                            <span className="text-xs text-gray-500 capitalize">{u.role}</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-[#121212] rounded-full border border-[#2a2a2a]">
+                                                {u.role === 'admin' ? <Shield className="w-4 h-4 text-purple-400" /> : <User className="w-4 h-4 text-gray-400" />}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-200 text-sm">{u.email}</span>
+                                                <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">{u.role}</span>
+                                            </div>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                                            Resetar Senha
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <form action={async () => {
+                                                "use server";
+                                                await impersonateAction(u.email);
+                                            }}>
+                                                <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white h-8 px-2" title="Acessar Dashboard">
+                                                    <LogIn className="w-4 h-4" />
+                                                </Button>
+                                            </form>
+
+                                            {u.role !== 'admin' ? (
+                                                <form action={async () => {
+                                                    "use server";
+                                                    await updateUserRoleAction(u.id, 'admin');
+                                                }}>
+                                                    <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 text-xs">
+                                                        Tornar Admin
+                                                    </Button>
+                                                </form>
+                                            ) : (
+                                                <form action={async () => {
+                                                    "use server";
+                                                    await updateUserRoleAction(u.id, 'user');
+                                                }}>
+                                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-300 hover:bg-[#1a1a1a] text-xs">
+                                                        Remover Admin
+                                                    </Button>
+                                                </form>
+                                            )}
+
+                                            <form action={async () => {
+                                                "use server";
+                                                await deleteUserAction(u.id);
+                                            }}>
+                                                <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-8 px-2" title="Remover Usuário">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </form>
+                                        </div>
                                     </div>
                                 ))}
+                                {tenant.users.length === 0 && (
+                                    <p className="text-center text-gray-500 py-4 text-sm italic">Nenhum usuário vinculado.</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -86,10 +171,20 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                             <CardTitle className="text-red-400 text-base">Zona de Perigo</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button variant="outline" className="w-full justify-start text-red-500 border-red-900/50 hover:bg-red-950/30">
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir Empresa
-                            </Button>
+                            <form action={async () => {
+                                "use server";
+                                await deleteTenantAction(tenant.id);
+                                redirect("/admin/tenants");
+                            }}>
+                                <Button
+                                    type="submit"
+                                    variant="outline"
+                                    className="w-full justify-start text-red-500 border-red-900/50 hover:bg-red-950/30"
+                                >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir Empresa Permanentemente
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
                 </div>
