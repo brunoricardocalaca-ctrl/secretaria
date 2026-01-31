@@ -44,15 +44,8 @@ export async function GET(request: Request) {
         }
     }
 
-    // Handle invite links that use hash fragments instead of query params
-    // These links have tokens in the URL hash (#access_token=...) which we can't read server-side
-    // So we redirect to a client-side page that can process them
-    const type = searchParams.get("type");
-    if (type === "invite" || searchParams.has("access_token") || request.url.includes("#access_token")) {
-        console.log("✅ Invite link detected, redirecting to client-side handler");
-        return NextResponse.redirect(`${origin}/auth/confirm?next=${encodeURIComponent(next)}`);
-    }
-
-    console.error("❌ No code detected in callback");
-    return NextResponse.redirect(`${origin}/login?error=auth&error_description=${encodeURIComponent("No authentication code received")}`);
+    // No code means this is likely an invite link with hash-based tokens
+    // We can't read hash fragments server-side, so redirect to client-side handler
+    console.log("⚠️ No code found, redirecting to client-side handler for hash tokens");
+    return NextResponse.redirect(`${origin}/auth/confirm?next=${encodeURIComponent(next)}`);
 }
