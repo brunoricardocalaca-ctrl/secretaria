@@ -109,6 +109,8 @@ export async function impersonateAction(email: string) {
         return { error: "Acesso negado. Apenas super admins podem acessar contas." };
     }
 
+    let redirectUrl: string | null = null;
+
     try {
         const supabaseAdmin = createAdminClient();
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
@@ -122,10 +124,14 @@ export async function impersonateAction(email: string) {
         if (error) throw error;
 
         // Use direct link redirect
-        return redirect(data.properties.action_link);
+        redirectUrl = data.properties.action_link;
     } catch (e: any) {
         console.error("Impersonation error:", e);
         return { error: e.message || "Erro ao gerar link de acesso." };
+    }
+
+    if (redirectUrl) {
+        redirect(redirectUrl);
     }
 }
 
