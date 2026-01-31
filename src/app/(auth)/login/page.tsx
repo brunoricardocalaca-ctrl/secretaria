@@ -7,9 +7,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowRight, EyeOff } from "lucide-react"
 import { useFormState } from "react-dom"
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
     const [state, formAction] = useFormState(login, null)
+
+    const searchParams = useSearchParams();
+    const errorParam = searchParams.get('error');
+    const logs = searchParams.get('error_description');
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-4 py-12">
@@ -34,6 +39,11 @@ export default function LoginPage() {
             {/* Login Card */}
             <div className="w-full max-w-[400px] rounded-[2.5rem] border border-white/[0.03] bg-[#121212]/40 p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-3xl transition-all hover:border-white/[0.06]">
                 <form action={formAction} className="space-y-6">
+                    {errorParam === 'auth' && (
+                        <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-400">
+                            {logs ? decodeURIComponent(logs) : "Erro de autenticação. Tente novamente."}
+                        </div>
+                    )}
                     {state?.error && (
                         <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-400">
                             {state.error}
