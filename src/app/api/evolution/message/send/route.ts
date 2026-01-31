@@ -5,17 +5,26 @@ import prisma from "@/lib/prisma";
 /**
  * Endpoint para envio de mensagens via Evolution API
  * URL: POST /api/evolution/message/send
- * Body: { instanceName, number, text, mediaUrl?, tenantId, chatId }
+ * Body: { tenantId, chatId, text, mediaUrl?, instanceName?, number? }
+ * 
+ * Se number/instanceName não forem enviados, buscaremos pelo chatId (Lead ID).
  */
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { instanceName, number, text, mediaUrl, tenantId, chatId } = body;
+        let { instanceName, number, text, mediaUrl, tenantId, chatId } = body;
 
-        // Validação básica
-        if (!instanceName || !number) {
+        // Validação Mínima
+        if (!chatId && !number) {
             return NextResponse.json(
-                { error: "Missing required fields: instanceName, number" },
+                { error: "Must provide either chatId (Lead ID) or number" },
+                { status: 400 }
+            );
+        }
+
+        if (!tenantId) {
+            return NextResponse.json(
+                { error: "Missing required field: tenantId" },
                 { status: 400 }
             );
         }
@@ -23,6 +32,32 @@ export async function POST(request: NextRequest) {
         if (!text && !mediaUrl) {
             return NextResponse.json(
                 { error: "Must provide either text or mediaUrl" },
+                { status: 400 }
+            );
+        }
+
+        // Se faltar número ou instância, buscar do Lead usando chatId
+        if (chatId && (!number || !instanceName)) {
+            const lead = await prisma.lead.findUnique({
+                where: { id: chatId }
+            });
+
+            if (!lead) {
+                return NextResponse.json(
+                    { error: "Lead (Chat ID) not found" },
+                    { status: 404 }
+                );
+            }
+
+            // Usar dados do Lead se não foram fornecidos
+            if (!number) number = lead.whatsapp;
+            if (!instanceName) instanceName = lead.instanceName;
+        }
+
+        // Validação Final antes do envio
+        if (!instanceName || !number) {
+            return NextResponse.json(
+                { error: "Could not resolve instanceName or number from Chat ID" },
                 { status: 400 }
             );
         }
@@ -39,7 +74,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Salvar mensagem no banco de dados (se chatId/leadId for fornecido)
-        if (chatId && tenantId) {
+        if (chatId) {
             try {
                 await prisma.conversation.create({
                     data: {
