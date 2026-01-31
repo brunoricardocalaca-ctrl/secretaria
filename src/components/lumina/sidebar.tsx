@@ -79,11 +79,8 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                 <div className="flex items-center gap-1.5 font-black text-2xl tracking-tighter">
                                     <span className="text-white">NEXUS</span>
                                     <span className="text-amber-500 font-light translate-y-[-1px] text-xl">|</span>
-                                    <span className="text-amber-500 font-medium text-lg uppercase tracking-widest ml-1">secretar.ia</span>
+                                    <span className="text-amber-500 font-medium text-sm uppercase tracking-widest ml-1">secretar.ia</span>
                                 </div>
-                                <span className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold block mt-3 transition-colors group-hover:text-gray-400">
-                                    Plataforma Intuitiva • v2.4
-                                </span>
                             </div>
                         </>
                     ) : (

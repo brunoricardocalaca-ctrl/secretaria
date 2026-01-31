@@ -87,7 +87,7 @@ export function TenantForm({ tenant }: { tenant: any }) {
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
-                        <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white">
+                        <Button type="submit" disabled={loading} className="bg-amber-500 hover:bg-amber-600 text-black font-medium transition-colors">
                             <Save className="w-4 h-4 mr-2" />
                             {loading ? "Salvando..." : "Salvar Alterações"}
                         </Button>

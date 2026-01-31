@@ -91,7 +91,7 @@ export default function NewTenantPage() {
                         )}
 
                         <div className="pt-4">
-                            <Button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-gray-200">
+                            <Button type="submit" disabled={loading} className="w-full bg-amber-500 text-black hover:bg-amber-600 font-medium transition-colors">
                                 {loading ? "Criando..." : "Criar Empresa e Plano"}
                             </Button>
                         </div>

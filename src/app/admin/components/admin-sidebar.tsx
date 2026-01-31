@@ -49,9 +49,9 @@ export function AdminSidebar() {
         <div className="w-64 h-full bg-[#050505] border-r border-[#1F1F1F] flex flex-col">
             <div className="p-6">
                 <div className="flex items-center gap-2 mb-8">
-                    <ShieldCheck className="w-6 h-6 text-red-500" />
+                    <ShieldCheck className="w-6 h-6 text-amber-500" />
                     <span className="font-bold text-white text-lg tracking-tight">
-                        Lumina <span className="text-red-500">Admin</span>
+                        Lumina <span className="text-amber-500">Admin</span>
                     </span>
                 </div>
 
@@ -63,7 +63,7 @@ export function AdminSidebar() {
                             className={cn(
                                 "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all",
                                 pathname === item.href
-                                    ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                                     : "text-gray-400 hover:text-white hover:bg-[#121212]"
                             )}
                         >
