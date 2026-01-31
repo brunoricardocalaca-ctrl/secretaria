@@ -7,7 +7,8 @@ import prisma from "@/lib/prisma";
  * URL: POST /api/evolution/message/send
  * Body: { tenantId, chatId, text, mediaUrl?, instanceName?, number? }
  * 
- * Se number/instanceName não forem enviados, buscaremos pelo chatId (Lead ID).
+ * Se number/instanceName não forem enviados (cenário Testar IA), apenas salva no banco.
+ * Se forem enviados (ou encontrados no Lead), tenta enviar via WhatsApp também.
  */
 export async function POST(request: NextRequest) {
     try {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
         // Validação Mínima
         if (!chatId && !number) {
             return NextResponse.json(
-                { error: "Must provide either chatId (Lead ID) or number" },
+                { error: "Must provide post chatId (Lead ID) or number" },
                 { status: 400 }
             );
         }
@@ -36,53 +37,48 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Se faltar número ou instância, buscar do Lead usando chatId
+        // Tentar preencher dados faltantes usando o Lead (se disponível)
         if (chatId && (!number || !instanceName)) {
             const lead = await prisma.lead.findUnique({
                 where: { id: chatId }
             });
 
-            if (!lead) {
-                return NextResponse.json(
-                    { error: "Lead (Chat ID) not found" },
-                    { status: 404 }
-                );
+            if (lead) {
+                if (!number) number = lead.whatsapp;
+                if (!instanceName) instanceName = lead.instanceName;
             }
-
-            // Usar dados do Lead se não foram fornecidos
-            if (!number) number = lead.whatsapp;
-            if (!instanceName) instanceName = lead.instanceName;
+            // Se não achar o lead ou não tiver dados, apenas segue sem eles
         }
 
-        // Validação Final antes do envio
-        if (!instanceName || !number) {
-            return NextResponse.json(
-                { error: "Could not resolve instanceName or number from Chat ID" },
-                { status: 400 }
-            );
+        let evolutionResult = null;
+
+        // Apenas tenta enviar via Evolution se tivermos os dados necessários
+        // Para "Testar IA", esses dados podem estar ausentes ou ser inválidos, então pulamos
+        if (instanceName && number) {
+            try {
+                const evolution = new EvolutionClient();
+                if (mediaUrl) {
+                    evolutionResult = await evolution.sendMedia(instanceName, number, mediaUrl, text);
+                } else {
+                    evolutionResult = await evolution.sendText(instanceName, number, text);
+                }
+            } catch (evoError) {
+                console.warn("[Evolution API] Skipping send or failed:", evoError);
+                // Não bloqueamos o fluxo se falhar o envio externo, pois o foco pode ser apenas logar no chat interno
+            }
         }
 
-        const evolution = new EvolutionClient();
-        let result;
-
-        if (mediaUrl) {
-            // Envio de mídia
-            result = await evolution.sendMedia(instanceName, number, mediaUrl, text);
-        } else {
-            // Envio de texto apenas
-            result = await evolution.sendText(instanceName, number, text);
-        }
-
-        // Salvar mensagem no banco de dados (se chatId/leadId for fornecido)
+        // Salvar mensagem no banco de dados (CRÍTICO para o chat interno funcionar)
+        let dbMessage = null;
         if (chatId) {
             try {
-                await prisma.conversation.create({
+                dbMessage = await prisma.conversation.create({
                     data: {
                         content: text || (mediaUrl ? `[Media: ${mediaUrl}]` : ""),
                         role: "assistant", // Mensagem enviada pelo sistema/IA
                         leadId: chatId,    // chatId é o ID do Lead
                         tenantId: tenantId,
-                        instanceName: instanceName
+                        instanceName: instanceName || "internal_test" // Fallback para não quebrar constraint se houver
                     }
                 });
 
@@ -94,13 +90,15 @@ export async function POST(request: NextRequest) {
 
             } catch (dbError) {
                 console.error("[Evolution Send Message] Failed to save to DB:", dbError);
-                // Não falhar a requisição se o erro for apenas no banco (mensagem já foi enviada)
+                return NextResponse.json({ error: "Failed to save message to database" }, { status: 500 });
             }
         }
 
         return NextResponse.json({
             success: true,
-            data: result
+            savedToDb: !!dbMessage,
+            sentToEvolution: !!evolutionResult,
+            data: evolutionResult
         });
 
     } catch (error: any) {
