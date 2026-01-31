@@ -304,20 +304,37 @@ export async function createTenantManualAction(formData: FormData) {
 
                 if (inviteError) {
                     console.warn("User invite warning:", inviteError.message);
-                    inviteMessage = " (Usuário já existe ou erro no convite)";
+
+                    // Attempt to find existing user
+                    const { data: userData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+                    const existingUser = userData?.users.find(u => u.email === ownerEmail);
+
+                    if (existingUser) {
+                        userId = existingUser.id;
+                        inviteMessage = " (Usuário já existia, foi vinculado)";
+                    } else {
+                        inviteMessage = " (Erro ao convidar usuário)";
+                    }
                 } else {
                     userId = inviteData.user?.id;
                 }
 
                 if (userId) {
-                    await prisma.profile.create({
-                        data: {
-                            userId: userId,
-                            email: ownerEmail,
-                            role: 'admin',
-                            tenantId: tenant.id
-                        }
+                    // Check if profile already exists for this specific tenant (avoid duplicates if re-running)
+                    const existingProfile = await prisma.profile.findFirst({
+                        where: { userId, tenantId: tenant.id }
                     });
+
+                    if (!existingProfile) {
+                        await prisma.profile.create({
+                            data: {
+                                userId: userId,
+                                email: ownerEmail,
+                                role: 'admin',
+                                tenantId: tenant.id
+                            }
+                        });
+                    }
                 }
             } catch (authError: any) {
                 console.error("Supabase Auth Error:", authError.message);
