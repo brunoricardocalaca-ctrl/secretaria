@@ -316,9 +316,7 @@ export async function createTenantManualAction(formData: FormData) {
                 }
 
                 const supabaseAdmin = createAdminClient();
-                const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(ownerEmail, {
-                    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`
-                });
+                const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(ownerEmail);
 
                 let userId: string | undefined;
 
