@@ -78,6 +78,12 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
     };
 
     return (
+        <div className="p-8 space-y-8 max-w-4xl">
+            <div>
+                <h1 className="text-3xl font-bold text-white tracking-tight">Configurações da Plataforma</h1>
+                <p className="text-gray-400 mt-2">Defina as integrações globais e padrões do sistema.</p>
+            </div>
+
             <div className="glass-card rounded-2xl p-6">
                 <div className="flex items-center gap-2 mb-2">
                     <div className="p-2 rounded-lg border border-red-500/20 bg-red-500/10">
@@ -88,7 +94,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
                 <p className="text-gray-500 text-sm mb-6">
                     URL utilizada para processamento de filas e automações globais.
                 </p>
-                
+
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <Label className="text-gray-300">Webhook URL (Production)</Label>
@@ -193,6 +199,6 @@ Retorne APENAS um JSON válido com a seguinte estrutura, sem markdown ou explica
                     </Button>
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
