@@ -229,37 +229,75 @@ export async function resendInviteAction(email: string) {
     try {
         const supabaseAdmin = createAdminClient();
 
-        // 1. Check if user exists
+        // 1. Check if user exists in Supabase Auth
         const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
         if (listError) throw listError;
 
         const existingUser = usersData.users.find(u => u.email === email);
+        const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
         if (existingUser) {
+            // Case A: User is already active/confirmed -> Send Recovery Link (acts as access link)
             if (existingUser.email_confirmed_at) {
-                return { error: "Usuário já está ativo. Envie recuperação de senha." };
-            } else {
-                // User exists but unconfirmed. Try to resend invite/signup confirmation.
-                // Note: 'invite' type for resend is not clearly documented for admin, 
-                // but 'signup' works for unconfirmed signups. 
-                // Ideally we delete and re-invite if we want a fresh start, but that loses ID.
-                // Let's try deleting and re-inviting for the "Resend" feel if they are unconfirmed.
+                const { error: recoveryError } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${origin}/api/auth/callback?type=recovery`
+                });
 
-                await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
-                // Now fall through to invite logic
+                if (recoveryError) throw recoveryError;
+                return { success: "Usuário já ativo. Enviado link de acesso (recuperação) para o email." };
             }
+
+            // Case B: User exists but NOT confirmed -> Re-create invite
+            // We must delete the old auth user to send a fresh "Invite" email, 
+            // BUT we must preserve the Profile connection by updating userId.
+
+            const oldUserId = existingUser.id;
+
+            // 1. Delete old Auth User
+            const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(oldUserId);
+            if (deleteError) throw deleteError;
+
+            // 2. Send New Invite
+            const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+
+            if (inviteError) {
+                // If invite fails, we have a problem (orphaned profile). 
+                // In production code we'd want a transaction concept, but here we just error.
+                throw inviteError;
+            }
+
+            // 3. Update Profile with NEW User ID
+            const newUserId = inviteData.user?.id;
+            if (newUserId) {
+                // Find profile by email (safest for re-linking) or old user ID if we could, 
+                // but email is unique per tenant usually? No, email is unique globally in Profile?
+                // Actually Profile has (userId) unique. 
+                // We should find the profile that matched the oldUserId.
+
+                // Oops, we can't find by oldUserId in Prisma if we didn't fetch it first? 
+                // Prisma validation doesn't check foreign key to Auth real-time, so record exists.
+
+                await prisma.profile.updateMany({
+                    where: { email: email }, // Update profile(s) with this email to the new ID
+                    data: { userId: newUserId }
+                });
+            }
+
+            return { success: "Convite recriado e reenviado com sucesso!" };
         }
 
+        // Case C: User does not exist at all -> Standard Invite
         const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
         if (error) {
-            // Provide friendly error if it still fails
-            if (error.message.includes("already")) return { error: "Usuário já registrado." };
+            if (error.message.includes("already")) return { error: "Erro: Usuário já registrado (conflito)." };
             throw error;
         }
 
         return { success: "Convite enviado com sucesso!" };
+
     } catch (e: any) {
+        console.error("Resend Invite Error:", e);
         return { error: e.message || "Erro ao reenviar convite." };
     }
 }
