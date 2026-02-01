@@ -62,11 +62,8 @@ export async function GET(request: Request) {
             if (type === 'recovery') {
                 console.log("Attempting verifyOtp fallback for recovery...");
                 const { error: otpError } = await supabase.auth.verifyOtp({
-                    token: code,
+                    token_hash: code,
                     type: 'recovery',
-                    options: {
-                        redirectTo: `${origin}/auth/reset-password` // Not used for session but good practice
-                    }
                 });
 
                 if (!otpError) {
