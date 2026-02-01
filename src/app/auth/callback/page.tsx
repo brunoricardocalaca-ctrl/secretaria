@@ -42,7 +42,7 @@ function AuthCallbackContent() {
                 console.log("✅ Session set successfully")
 
                 // Redirect based on type
-                if (type === "invite") {
+                if (type === "invite" || type === "recovery") {
                     router.push("/auth/reset-password")
                 } else {
                     const next = searchParams.get("next") || "/dashboard"

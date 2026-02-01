@@ -16,6 +16,7 @@ export default async function ProfilePage() {
         include: {
             tenant: {
                 select: {
+                    id: true,
                     name: true,
                     planStatus: true
                 }
@@ -23,9 +24,20 @@ export default async function ProfilePage() {
         }
     });
 
-    if (!profile) {
+    if (!profile || !profile.tenant) {
         redirect("/login");
     }
 
-    return <ProfileClient profile={profile} />;
+    // Fetch Team Members
+    const teamMembers = await prisma.profile.findMany({
+        where: { tenantId: profile.tenantId },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            userId: true
+        }
+    });
+
+    return <ProfileClient profile={profile} teamMembers={teamMembers} />;
 }
