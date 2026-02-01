@@ -81,7 +81,7 @@ export async function resetPassword(
     const supabase = await createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${origin}/auth/callback?type=recovery`,
+        redirectTo: `${origin}/api/auth/callback?type=recovery`, // Server Route with recovery type
     });
 
     if (error) {
@@ -189,7 +189,7 @@ export async function inviteUser(
 
     // 1. Invite User via Supabase Auth
     const { data: authData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${origin}/auth/callback?type=invite` // Important: type=invite for our callback handler
+        redirectTo: `${origin}/api/auth/callback?type=invite` // Server Route with invite type
     });
 
     if (inviteError) {
