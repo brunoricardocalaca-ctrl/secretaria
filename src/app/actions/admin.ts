@@ -218,6 +218,88 @@ export async function addUserAction(tenantId: string, email: string) {
     }
 }
 
+// ... existing imports
+
+export async function resendInviteAction(email: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    try {
+        const supabaseAdmin = createAdminClient();
+        // Resend invite (logic is same as new invite for existing user in supabase perspective if unconfirmed)
+        // Or we can use generateLink if we want to manually send it, but inviteUserByEmail is standard.
+        // Actually, if user is already invited but not confirmed, inviteUserByEmail resends the email.
+        const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+
+        if (error) throw error;
+
+        return { success: "Convite reenviado com sucesso!" };
+    } catch (e: any) {
+        return { error: e.message || "Erro ao reenviar convite." };
+    }
+}
+
+export async function sendPasswordRecoveryAction(email: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    try {
+        const supabaseAdmin = createAdminClient();
+        // Uses the new API callback route via origin config in Supabase or manual redirectTo
+        const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+            redirectTo: `${origin}/api/auth/callback?type=recovery`
+        });
+
+        if (error) throw error;
+
+        return { success: "Email de recuperação enviado!" };
+    } catch (e: any) {
+        return { error: e.message || "Erro ao enviar recuperação." };
+    }
+}
+
+export async function updateUserEmailAction(profileId: string, newEmail: string) {
+    const supabase = await createClient();
+    const { data: { user: adminUser } } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "Não autenticado" };
+
+    try {
+        const targetProfile = await prisma.profile.findUnique({
+            where: { id: profileId },
+            select: { userId: true }
+        });
+
+        if (!targetProfile?.userId) return { error: "Usuário não encontrado." };
+
+        const supabaseAdmin = createAdminClient();
+
+        // 1. Update in Supabase Auth
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(targetProfile.userId, {
+            email: newEmail,
+            email_confirm: true // Admin change auto-confirms
+        });
+
+        if (authError) throw authError;
+
+        // 2. Update in Prisma
+        await prisma.profile.update({
+            where: { id: profileId },
+            data: { email: newEmail }
+        });
+
+        revalidatePath("/admin/tenants");
+        return { success: "Email alterado com sucesso." };
+    } catch (e: any) {
+        return { error: e.message || "Erro ao alterar email." };
+    }
+}
+
 export async function resetUserPasswordAction(profileId: string) {
     const supabase = await createClient();
     const { data: { user: adminUser } } = await supabase.auth.getUser();

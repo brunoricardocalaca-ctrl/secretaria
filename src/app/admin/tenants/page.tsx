@@ -131,18 +131,18 @@ export default async function AdminTenantsPage() {
                                                 await impersonateAction(tenant.ownerEmail!);
                                             }}>
                                                 <Button
-                                                    size="icon"
+                                                    size="sm"
                                                     variant="ghost"
-                                                    className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
-                                                    title="Acessar como Usuário"
+                                                    className="h-8 text-xs font-medium text-gray-400 hover:text-white hover:bg-white/10"
                                                 >
-                                                    <LogIn className="w-4 h-4" />
+                                                    <LogIn className="w-3 h-3 mr-1.5" />
+                                                    Acessar
                                                 </Button>
                                             </form>
                                         )}
                                         <Link href={`/admin/tenants/${tenant.id}`}>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10">
-                                                <ExternalLink className="w-4 h-4" />
+                                            <Button variant="outline" size="sm" className="h-8 text-xs font-medium border-white/10 text-gray-300 hover:bg-white/5 hover:text-white">
+                                                Detalhes
                                             </Button>
                                         </Link>
                                     </div>

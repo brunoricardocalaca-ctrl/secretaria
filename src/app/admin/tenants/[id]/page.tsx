@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { LogIn, Plus, Lock, Users as UsersIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UserRowActions } from "./user-row-actions";
 
 export default async function AdminTenantDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -105,57 +106,7 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                                         </div>
 
                                         <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-                                            <form action={async () => {
-                                                "use server";
-                                                await impersonateAction(u.email);
-                                            }}>
-                                                <Button size="sm" variant="secondary" className="bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/5 h-8 text-xs font-medium">
-                                                    <LogIn className="w-3.5 h-3.5 mr-1.5" />
-                                                    Acessar
-                                                </Button>
-                                            </form>
-
-                                            <form action={async () => {
-                                                "use server";
-                                                if (confirm("Resetar senha para '123mudar?'?")) {
-                                                    await resetUserPasswordAction(u.id);
-                                                }
-                                            }}>
-                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-gray-500 hover:text-amber-400 hover:bg-amber-500/10" title="Resetar Senha (123mudar?)">
-                                                    <Lock className="w-4 h-4" />
-                                                </Button>
-                                            </form>
-
-                                            {u.role !== 'admin' ? (
-                                                <form action={async () => {
-                                                    "use server";
-                                                    await updateUserRoleAction(u.id, 'admin');
-                                                }}>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-purple-400 hover:bg-purple-500/10" title="Tornar Admin">
-                                                        <Shield className="w-4 h-4" />
-                                                    </Button>
-                                                </form>
-                                            ) : (
-                                                <form action={async () => {
-                                                    "use server";
-                                                    await updateUserRoleAction(u.id, 'user');
-                                                }}>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-gray-300 hover:bg-white/5" title="Remover Admin">
-                                                        <XCircle className="w-4 h-4" />
-                                                    </Button>
-                                                </form>
-                                            )}
-
-                                            <div className="w-px h-4 bg-white/10 mx-1" />
-
-                                            <form action={async () => {
-                                                "use server";
-                                                await deleteUserAction(u.id);
-                                            }}>
-                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-gray-500 hover:text-red-500 hover:bg-red-500/10" title="Remover Usuário">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </form>
+                                            <UserRowActions user={u} />
                                         </div>
                                     </div>
                                 ))}

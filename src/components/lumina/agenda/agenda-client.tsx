@@ -14,11 +14,7 @@ import {
     createSimpleAppointment,
     getAppointments
 } from "@/app/actions/agenda";
-// Toast fallback since sonner is not available
-const toast = {
-    success: (msg: string) => console.log("SUCCESS:", msg),
-    error: (msg: string) => console.error("ERROR:", msg),
-};
+import { toast } from "sonner";
 
 // Stubs for remaining missing components
 const HolidayManager = ({ open, onClose }: any) => null;
