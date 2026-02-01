@@ -67,6 +67,16 @@ export function AIPreview() {
         // Loading state remains true until Realtime event arrives (or timeout)
     }
 
+    // Track if message was already received (prevent duplicates from Realtime + Polling)
+    const messageReceivedRef = useRef(false);
+
+    // Reset the flag when loading changes to true (new message sent)
+    useEffect(() => {
+        if (loading) {
+            messageReceivedRef.current = false;
+        }
+    }, [loading]);
+
     // Realtime Subscription (persistent, only depends on chatId)
     useEffect(() => {
         let isCancelled = false;
@@ -78,13 +88,17 @@ export function AIPreview() {
                 console.log("Received AI response payload:", payload);
                 const msg = payload.payload?.message || payload.message || payload.payload;
 
-                if (!isCancelled && typeof msg === 'string') {
+                if (!isCancelled && typeof msg === 'string' && !messageReceivedRef.current) {
+                    messageReceivedRef.current = true;
+                    console.log("Realtime: Adding message to UI");
                     setMessages(prev => [...prev, {
                         role: 'ai',
                         text: msg,
                         timestamp: new Date()
                     }]);
                     setLoading(false);
+                } else if (messageReceivedRef.current) {
+                    console.log("Realtime: Message already received, ignoring duplicate");
                 }
             })
             .subscribe((status) => {
@@ -110,8 +124,11 @@ export function AIPreview() {
         let pollCount = 0;
 
         const pollInterval = setInterval(async () => {
-            if (isCancelled) {
-                console.log("Polling: Cancelled, stopping");
+            if (isCancelled || messageReceivedRef.current) {
+                if (messageReceivedRef.current) {
+                    console.log("Polling: Message already received via Realtime, stopping");
+                    clearInterval(pollInterval);
+                }
                 return;
             }
             pollCount++;
@@ -120,10 +137,13 @@ export function AIPreview() {
             const res = await checkAIResponse(chatId);
             console.log(`Polling: Result for attempt #${pollCount}:`, res);
 
-            if (!isCancelled && res.success && res.message) {
+            if (!isCancelled && res.success && res.message && !messageReceivedRef.current) {
+                messageReceivedRef.current = true;
                 console.log("Polling: SUCCESS! Message received:", res.message);
                 setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
                 setLoading(false);
+            } else if (messageReceivedRef.current) {
+                console.log("Polling: Message already received via Realtime, ignoring");
             } else {
                 console.log(`Polling: No message yet (attempt #${pollCount})`);
             }
