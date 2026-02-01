@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import AuthRedirectHandler from "@/app/auth-redirect-handler";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${inter.className} antialiased`}>
+        <AuthRedirectHandler />
         {children}
         <Toaster position="top-center" richColors theme="dark" />
       </body>
