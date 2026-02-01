@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Bot, Send, User, Loader2, RefreshCw, AlertCircle } from "lucide-react";
 import { sendPublicAIPreviewMessage } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 export function PublicChat({ token }: { token: string }) {
     const [chatId, setChatId] = useState(() => crypto.randomUUID());
@@ -39,13 +40,33 @@ export function PublicChat({ token }: { token: string }) {
 
         const res = await sendPublicAIPreviewMessage(userMsg, token, chatId);
 
-        if (res.success) {
-            setMessages(prev => [...prev, { role: 'ai', text: res.response, timestamp: new Date() }]);
-        } else {
+        if (!res.success) {
             setMessages(prev => [...prev, { role: 'ai', text: `⚠️ ${res.error}`, timestamp: new Date() }]);
+            setLoading(false);
         }
-        setLoading(false);
+        // Loading state remains true until Realtime event arrives
     }
+
+    // Realtime Subscription
+    useEffect(() => {
+        const supabase = createClient();
+        const channel = supabase.channel(`chat_${chatId}`)
+            .on('broadcast', { event: 'ai-response' }, (payload) => {
+                if (payload.payload?.message) {
+                    setMessages(prev => [...prev, {
+                        role: 'ai',
+                        text: payload.payload.message,
+                        timestamp: new Date()
+                    }]);
+                    setLoading(false);
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [chatId]);
 
     return (
         <div className="flex flex-col h-full bg-[#0A0A0A]">

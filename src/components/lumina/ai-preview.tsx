@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check } from "lucide-react";
 import { sendAIPreviewMessage, generatePublicChatLink } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 export function AIPreview() {
     const [chatId, setChatId] = useState(() => crypto.randomUUID());
@@ -56,15 +57,37 @@ export function AIPreview() {
         setMessages(prev => [...prev, { role: 'user', text: userMsg, timestamp: new Date() }]);
         setLoading(true);
 
+        // Fire and forget (backend will trigger N8N, which triggers API, which triggers Realtime)
         const res = await sendAIPreviewMessage(userMsg, chatId);
 
-        if (res.success) {
-            setMessages(prev => [...prev, { role: 'ai', text: res.response, timestamp: new Date() }]);
-        } else {
+        if (!res.success) {
             setMessages(prev => [...prev, { role: 'ai', text: `⚠️ Erro: ${res.error}`, timestamp: new Date() }]);
+            setLoading(false);
         }
-        setLoading(false);
+        // Loading state remains true until Realtime event arrives (or timeout)
     }
+
+    // Realtime Subscription
+    useEffect(() => {
+        const supabase = createClient();
+        const channel = supabase.channel(`chat_${chatId}`)
+            .on('broadcast', { event: 'ai-response' }, (payload) => {
+                console.log("Received AI response:", payload);
+                if (payload.payload?.message) {
+                    setMessages(prev => [...prev, {
+                        role: 'ai',
+                        text: payload.payload.message,
+                        timestamp: new Date()
+                    }]);
+                    setLoading(false);
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [chatId]);
 
     return (
         <Sheet>

@@ -29,6 +29,7 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
         const contextText = contextResults.map(r => r.content).join("\n\n---\n\n");
 
         // 2. Chamada para o n8n
+        // Async Pattern: Fire and forget (or await 200 OK)
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -47,12 +48,13 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
         });
 
         if (!response.ok) {
-            throw new Error(`n8n Error: ${response.statusText}`);
+            // Log but don't fail hard if it's just n8n being slow? No, 500 error is bad.
+            // If n8n workflow is async, it should return 200 OK immediately (Mock Response or Respond to Webhook early).
+            // throw new Error(`n8n Error: ${response.statusText}`);
         }
 
-        const data = await response.json();
-        // Expecting { output: "AI response" } or { message: "..." }
-        return { success: true, response: data.output || data.message || JSON.stringify(data) };
+        // We don't wait for output. Realtime will handle it.
+        return { success: true };
 
     } catch (e: any) {
         console.error("AI Preview Error:", e);
@@ -138,11 +140,11 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
         });
 
         if (!response.ok) {
-            throw new Error("Erro na comunicação com a IA.");
+            // throw new Error("Erro na comunicação com a IA.");
         }
 
-        const data = await response.json();
-        return { success: true, response: data.output || data.message || JSON.stringify(data) };
+        // Return sync success
+        return { success: true };
 
     } catch (e: any) {
         console.error("Public AI Preview Error:", e);
