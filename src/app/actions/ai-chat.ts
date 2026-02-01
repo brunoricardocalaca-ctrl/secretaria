@@ -178,22 +178,26 @@ export async function generatePublicChatLink() {
 
 export async function checkAIResponse(chatId: string) {
     try {
+        console.log(`[POLLING] Checking for chatId: ${chatId}`);
         // Use Prisma to bypass RLS policies on system_configs
         const config = await prisma.systemConfig.findUnique({
             where: { key: `chat_response_${chatId}` }
         });
 
         if (config && config.value) {
+            console.log(`[POLLING] Found message for ${chatId}:`, config.value.substring(0, 50));
             // Found it! Clean up (consume once)
             await prisma.systemConfig.delete({
                 where: { key: `chat_response_${chatId}` }
             });
+            console.log(`[POLLING] Deleted config for ${chatId}`);
             return { success: true, message: config.value };
         }
 
+        console.log(`[POLLING] No message found for ${chatId}`);
         return { success: false };
     } catch (e: any) {
-        console.error("Polling Error:", e);
+        console.error("[POLLING] Error:", e);
         return { success: false };
     }
 }
