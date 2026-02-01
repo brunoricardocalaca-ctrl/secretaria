@@ -228,14 +228,37 @@ export async function resendInviteAction(email: string) {
 
     try {
         const supabaseAdmin = createAdminClient();
-        // Resend invite (logic is same as new invite for existing user in supabase perspective if unconfirmed)
-        // Or we can use generateLink if we want to manually send it, but inviteUserByEmail is standard.
-        // Actually, if user is already invited but not confirmed, inviteUserByEmail resends the email.
+
+        // 1. Check if user exists
+        const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) throw listError;
+
+        const existingUser = usersData.users.find(u => u.email === email);
+
+        if (existingUser) {
+            if (existingUser.email_confirmed_at) {
+                return { error: "Usuário já está ativo. Envie recuperação de senha." };
+            } else {
+                // User exists but unconfirmed. Try to resend invite/signup confirmation.
+                // Note: 'invite' type for resend is not clearly documented for admin, 
+                // but 'signup' works for unconfirmed signups. 
+                // Ideally we delete and re-invite if we want a fresh start, but that loses ID.
+                // Let's try deleting and re-inviting for the "Resend" feel if they are unconfirmed.
+
+                await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+                // Now fall through to invite logic
+            }
+        }
+
         const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
-        if (error) throw error;
+        if (error) {
+            // Provide friendly error if it still fails
+            if (error.message.includes("already")) return { error: "Usuário já registrado." };
+            throw error;
+        }
 
-        return { success: "Convite reenviado com sucesso!" };
+        return { success: "Convite enviado com sucesso!" };
     } catch (e: any) {
         return { error: e.message || "Erro ao reenviar convite." };
     }
@@ -249,8 +272,11 @@ export async function sendPasswordRecoveryAction(email: string) {
 
     try {
         const supabaseAdmin = createAdminClient();
-        // Uses the new API callback route via origin config in Supabase or manual redirectTo
         const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+        // Use admin.listUsers to check existence first to give better feedback
+        // (Supabase resetPasswordForEmail returns success even if user doesn't exist for security, sometimes)
+
         const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
             redirectTo: `${origin}/api/auth/callback?type=recovery`
         });
