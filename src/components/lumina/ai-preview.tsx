@@ -84,13 +84,22 @@ export function AIPreview() {
         console.log(`Subscribing to chat_${chatId}...`);
 
         const channel = supabase.channel(`chat_${chatId}`)
-            .on('broadcast', { event: 'ai-response' }, (payload) => {
+            .on('broadcast', { event: 'ai-response' }, async (payload) => {
                 console.log("Received AI response payload:", payload);
                 const msg = payload.payload?.message || payload.message || payload.payload;
 
                 if (!isCancelled && typeof msg === 'string' && !messageReceivedRef.current) {
                     messageReceivedRef.current = true;
                     console.log("Realtime: Adding message to UI");
+
+                    // Also consume the database entry to prevent polling from finding it
+                    try {
+                        await checkAIResponse(chatId);
+                        console.log("Realtime: Consumed database entry");
+                    } catch (e) {
+                        console.warn("Realtime: Failed to consume database entry", e);
+                    }
+
                     setMessages(prev => [...prev, {
                         role: 'ai',
                         text: msg,
