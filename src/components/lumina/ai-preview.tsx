@@ -67,13 +67,12 @@ export function AIPreview() {
         // Loading state remains true until Realtime event arrives (or timeout)
     }
 
-    // Realtime Subscription & Polling Fallback
+    // Realtime Subscription (persistent, only depends on chatId)
     useEffect(() => {
         let isCancelled = false;
         const supabase = createClient();
         console.log(`Subscribing to chat_${chatId}...`);
 
-        // 1. Realtime
         const channel = supabase.channel(`chat_${chatId}`)
             .on('broadcast', { event: 'ai-response' }, (payload) => {
                 console.log("Received AI response payload:", payload);
@@ -92,26 +91,34 @@ export function AIPreview() {
                 console.log(`Subscription status for chat_${chatId}:`, status);
             });
 
-        // 2. Polling Fallback (every 3s if loading)
-        let pollInterval: NodeJS.Timeout;
-        if (loading) {
-            console.log("Starting polling fallback...");
-            pollInterval = setInterval(async () => {
-                if (isCancelled) return;
-                const res = await checkAIResponse(chatId);
-                if (!isCancelled && res.success && res.message) {
-                    console.log("Polling success:", res.message);
-                    setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
-                    setLoading(false);
-                    clearInterval(pollInterval);
-                }
-            }, 3000);
-        }
+        return () => {
+            isCancelled = true;
+            console.log(`Unsubscribing from chat_${chatId}`);
+            supabase.removeChannel(channel);
+        };
+    }, [chatId]); // Only chatId, not loading!
+
+    // Polling Fallback (only when loading)
+    useEffect(() => {
+        if (!loading) return;
+
+        console.log("Starting polling fallback...");
+        let isCancelled = false;
+
+        const pollInterval = setInterval(async () => {
+            if (isCancelled) return;
+            const res = await checkAIResponse(chatId);
+            if (!isCancelled && res.success && res.message) {
+                console.log("Polling success:", res.message);
+                setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
+                setLoading(false);
+            }
+        }, 3000);
 
         return () => {
             isCancelled = true;
-            supabase.removeChannel(channel);
-            if (pollInterval) clearInterval(pollInterval);
+            clearInterval(pollInterval);
+            console.log("Polling stopped");
         };
     }, [chatId, loading]);
 
