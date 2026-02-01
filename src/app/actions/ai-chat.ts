@@ -177,27 +177,36 @@ export async function generatePublicChatLink() {
 }
 
 export async function checkAIResponse(chatId: string) {
+    const key = `chat_response_${chatId}`;
+    console.log(`[POLLING SERVER] Checking for key: "${key}"`);
+
     try {
-        console.log(`[POLLING] Checking for chatId: ${chatId}`);
         // Use Prisma to bypass RLS policies on system_configs
         const config = await prisma.systemConfig.findUnique({
-            where: { key: `chat_response_${chatId}` }
+            where: { key }
         });
 
+        console.log(`[POLLING SERVER] Prisma result:`, config ? {
+            id: config.id,
+            key: config.key,
+            valueLength: config.value.length,
+            valuePreview: config.value.substring(0, 50)
+        } : null);
+
         if (config && config.value) {
-            console.log(`[POLLING] Found message for ${chatId}:`, config.value.substring(0, 50));
+            console.log(`[POLLING SERVER] Found message for ${chatId}, deleting...`);
             // Found it! Clean up (consume once)
             await prisma.systemConfig.delete({
-                where: { key: `chat_response_${chatId}` }
+                where: { key }
             });
-            console.log(`[POLLING] Deleted config for ${chatId}`);
+            console.log(`[POLLING SERVER] Deleted config for ${chatId}`);
             return { success: true, message: config.value };
         }
 
-        console.log(`[POLLING] No message found for ${chatId}`);
+        console.log(`[POLLING SERVER] No message found for key: "${key}"`);
         return { success: false };
     } catch (e: any) {
-        console.error("[POLLING] Error:", e);
-        return { success: false };
+        console.error("[POLLING SERVER] Error:", e);
+        return { success: false, error: e.message };
     }
 }
