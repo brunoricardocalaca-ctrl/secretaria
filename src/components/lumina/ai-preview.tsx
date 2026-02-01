@@ -100,25 +100,39 @@ export function AIPreview() {
 
     // Polling Fallback (only when loading)
     useEffect(() => {
-        if (!loading) return;
+        if (!loading) {
+            console.log("Polling: Not starting because loading is false");
+            return;
+        }
 
-        console.log("Starting polling fallback...");
+        console.log(`Polling: Starting for chatId=${chatId}, loading=${loading}`);
         let isCancelled = false;
+        let pollCount = 0;
 
         const pollInterval = setInterval(async () => {
-            if (isCancelled) return;
+            if (isCancelled) {
+                console.log("Polling: Cancelled, stopping");
+                return;
+            }
+            pollCount++;
+            console.log(`Polling: Attempt #${pollCount} for chatId=${chatId}`);
+
             const res = await checkAIResponse(chatId);
+            console.log(`Polling: Result for attempt #${pollCount}:`, res);
+
             if (!isCancelled && res.success && res.message) {
-                console.log("Polling success:", res.message);
+                console.log("Polling: SUCCESS! Message received:", res.message);
                 setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
                 setLoading(false);
+            } else {
+                console.log(`Polling: No message yet (attempt #${pollCount})`);
             }
         }, 3000);
 
         return () => {
             isCancelled = true;
             clearInterval(pollInterval);
-            console.log("Polling stopped");
+            console.log(`Polling: Stopped after ${pollCount} attempts`);
         };
     }, [chatId, loading]);
 
