@@ -39,6 +39,7 @@ export async function GET(request: Request) {
         if (!error) {
             // If Invite or Recovery, redirect to reset password
             if (type === "invite" || type === "recovery") {
+                console.log(`Auth Callback: Type ${type} detected. Redirecting to reset-password.`);
                 return NextResponse.redirect(`${origin}/auth/reset-password`);
             }
 
@@ -54,10 +55,31 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}${next}`);
             }
         } else {
-            console.error("Auth Callback Error:", error);
+            console.error("Auth Callback Error for code exchange:", error.message);
+
+            // Fallback: If exchange code fails (e.g. missing PKCE verifier for Admin-initiated flows),
+            // try verifyOtp with the code as the token.
+            if (type === 'recovery') {
+                console.log("Attempting verifyOtp fallback for recovery...");
+                const { error: otpError } = await supabase.auth.verifyOtp({
+                    token: code,
+                    type: 'recovery',
+                    options: {
+                        redirectTo: `${origin}/auth/reset-password` // Not used for session but good practice
+                    }
+                });
+
+                if (!otpError) {
+                    console.log("verifyOtp fallback successful! Redirecting...");
+                    return NextResponse.redirect(`${origin}/auth/reset-password`);
+                } else {
+                    console.error("verifyOtp fallback failed:", otpError.message);
+                }
+            }
+
+            console.error("Auth Callback Details:", { type, code: code?.substring(0, 5) + "..." });
             // Redirect to error page or login with error
             return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
-
         }
     }
 
