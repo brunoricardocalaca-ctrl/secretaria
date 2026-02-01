@@ -18,51 +18,36 @@ export async function POST(request: NextRequest) {
         // Broadcast to Supabase Realtime
         const channel = supabase.channel(`chat_${chatId}`);
 
-        await channel.subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await channel.send({
-                    type: 'broadcast',
-                    event: 'ai-response',
-                    payload: { message: content }
-                });
-                // Clean up
-                supabase.removeChannel(channel);
-            }
-        });
-
-        // Since subscribe is async and might take a moment, we can try firing and forgetting?
-        // Actually, on server side, the 'subscribe' might behave differently or we might need to wait.
-        // The standard way to *send* a broadcast from server is using the REST API or client.
-        // Using the client: channel.subscribe -> .send() is correct. 
-        // We need to wait for subscription-confirmed usually?
-
-        // Faster way: use triggers? No, broadcast is ephemeral.
-        // Let's rely on the subscribe callback promise, but we need to keep the function alive.
-
-        // Correct pattern for server-side broadcast via client:
-        return new Promise((resolve) => {
+        // Use a Promise to await the subscription and broadcast
+        await new Promise<void>((resolve, reject) => {
             channel.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    await channel.send({
-                        type: 'broadcast',
-                        event: 'ai-response',
-                        payload: { message: content }
-                    });
-                    // Give it a tiny buffer to flush?
-                    setTimeout(async () => {
-                        await supabase.removeChannel(channel);
-                        resolve(NextResponse.json({ success: true }));
-                    }, 100);
+                    try {
+                        await channel.send({
+                            type: 'broadcast',
+                            event: 'ai-response',
+                            payload: { message: content }
+                        });
+                        // Give a tiny buffer for the message to fly
+                        setTimeout(() => resolve(), 50);
+                    } catch (err) {
+                        reject(err);
+                    }
                 } else if (status === 'CHANNEL_ERROR') {
-                    resolve(NextResponse.json({ error: "Channel error" }, { status: 500 }));
+                    reject(new Error("Channel subscription error"));
                 } else if (status === 'TIMED_OUT') {
-                    resolve(NextResponse.json({ error: "Timeout" }, { status: 504 }));
+                    reject(new Error("Channel subscription timeout"));
                 }
             });
         });
 
+        // Clean up
+        await supabase.removeChannel(channel);
+
+        return NextResponse.json({ success: true });
+
     } catch (e: any) {
         console.error("Chat Response Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return NextResponse.json({ error: e.message || "Unknown error" }, { status: 500 });
     }
 }
