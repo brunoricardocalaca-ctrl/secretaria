@@ -70,19 +70,26 @@ export function AIPreview() {
     // Realtime Subscription
     useEffect(() => {
         const supabase = createClient();
+        console.log(`Subscribing to chat_${chatId}...`);
+
         const channel = supabase.channel(`chat_${chatId}`)
             .on('broadcast', { event: 'ai-response' }, (payload) => {
-                console.log("Received AI response:", payload);
-                if (payload.payload?.message) {
+                console.log("Received AI response payload:", payload);
+                // Handle different payload structures just in case
+                const msg = payload.payload?.message || payload.message || payload.payload;
+
+                if (typeof msg === 'string') {
                     setMessages(prev => [...prev, {
                         role: 'ai',
-                        text: payload.payload.message,
+                        text: msg,
                         timestamp: new Date()
                     }]);
                     setLoading(false);
                 }
             })
-            .subscribe();
+            .subscribe((status) => {
+                console.log(`Subscription status for chat_${chatId}:`, status);
+            });
 
         return () => {
             supabase.removeChannel(channel);

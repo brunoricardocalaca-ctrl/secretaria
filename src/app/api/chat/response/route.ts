@@ -23,13 +23,17 @@ export async function POST(request: NextRequest) {
             channel.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
                     try {
+                        console.log(`Broadcasting to ${chatId}:`, content);
                         await channel.send({
                             type: 'broadcast',
                             event: 'ai-response',
                             payload: { message: content }
                         });
-                        // Give a tiny buffer for the message to fly
-                        setTimeout(() => resolve(), 50);
+                        // Give a larger buffer for the WebSocket frame to be sent
+                        setTimeout(() => {
+                            console.log("Broadcast success, resolving");
+                            resolve();
+                        }, 500);
                     } catch (err) {
                         reject(err);
                     }

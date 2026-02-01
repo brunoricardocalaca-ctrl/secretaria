@@ -52,10 +52,11 @@ export function PublicChat({ token }: { token: string }) {
         const supabase = createClient();
         const channel = supabase.channel(`chat_${chatId}`)
             .on('broadcast', { event: 'ai-response' }, (payload) => {
-                if (payload.payload?.message) {
+                const msg = payload.payload?.message || payload.message || payload.payload;
+                if (typeof msg === 'string') {
                     setMessages(prev => [...prev, {
                         role: 'ai',
-                        text: payload.payload.message,
+                        text: msg,
                         timestamp: new Date()
                     }]);
                     setLoading(false);
