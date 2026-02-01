@@ -178,22 +178,22 @@ export async function generatePublicChatLink() {
 
 export async function checkAIResponse(chatId: string) {
     try {
-        const supabase = await createClient();
-        // Check for the temporary key
-        const { data, error } = await supabase
-            .from("system_configs")
-            .select("value")
-            .eq("key", `chat_response_${chatId}`)
-            .single();
+        // Use Prisma to bypass RLS policies on system_configs
+        const config = await prisma.systemConfig.findUnique({
+            where: { key: `chat_response_${chatId}` }
+        });
 
-        if (data && data.value) {
+        if (config && config.value) {
             // Found it! Clean up (consume once)
-            await supabase.from("system_configs").delete().eq("key", `chat_response_${chatId}`);
-            return { success: true, message: data.value };
+            await prisma.systemConfig.delete({
+                where: { key: `chat_response_${chatId}` }
+            });
+            return { success: true, message: config.value };
         }
 
         return { success: false };
-    } catch (e) {
+    } catch (e: any) {
+        console.error("Polling Error:", e);
         return { success: false };
     }
 }
