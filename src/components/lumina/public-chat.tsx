@@ -47,13 +47,16 @@ export function PublicChat({ token }: { token: string }) {
         // Loading state remains true until Realtime event arrives
     }
 
-    // Realtime Subscription
+    // Realtime Subscription & Polling Fallback
     useEffect(() => {
+        let isCancelled = false;
         const supabase = createClient();
+
+        // 1. Realtime
         const channel = supabase.channel(`chat_${chatId}`)
             .on('broadcast', { event: 'ai-response' }, (payload) => {
                 const msg = payload.payload?.message || payload.message || payload.payload;
-                if (typeof msg === 'string') {
+                if (!isCancelled && typeof msg === 'string') {
                     setMessages(prev => [...prev, {
                         role: 'ai',
                         text: msg,
@@ -64,10 +67,28 @@ export function PublicChat({ token }: { token: string }) {
             })
             .subscribe();
 
+        // 2. Polling Fallback
+        let pollInterval: NodeJS.Timeout;
+        if (loading) {
+            pollInterval = setInterval(async () => {
+                if (isCancelled) return;
+                // Import Dynamically or Assume it's available via module federation/server actions logic
+                const { checkAIResponse } = await import("@/app/actions/ai-chat");
+                const res = await checkAIResponse(chatId);
+                if (!isCancelled && res.success && res.message) {
+                    setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
+                    setLoading(false);
+                    clearInterval(pollInterval);
+                }
+            }, 3000);
+        }
+
         return () => {
+            isCancelled = true;
             supabase.removeChannel(channel);
+            if (pollInterval) clearInterval(pollInterval);
         };
-    }, [chatId]);
+    }, [chatId, loading]);
 
     return (
         <div className="flex flex-col h-full bg-[#0A0A0A]">

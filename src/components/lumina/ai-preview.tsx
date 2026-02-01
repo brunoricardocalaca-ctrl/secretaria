@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check } from "lucide-react";
-import { sendAIPreviewMessage, generatePublicChatLink } from "@/app/actions/ai-chat";
+import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -67,18 +67,19 @@ export function AIPreview() {
         // Loading state remains true until Realtime event arrives (or timeout)
     }
 
-    // Realtime Subscription
+    // Realtime Subscription & Polling Fallback
     useEffect(() => {
+        let isCancelled = false;
         const supabase = createClient();
         console.log(`Subscribing to chat_${chatId}...`);
 
+        // 1. Realtime
         const channel = supabase.channel(`chat_${chatId}`)
             .on('broadcast', { event: 'ai-response' }, (payload) => {
                 console.log("Received AI response payload:", payload);
-                // Handle different payload structures just in case
                 const msg = payload.payload?.message || payload.message || payload.payload;
 
-                if (typeof msg === 'string') {
+                if (!isCancelled && typeof msg === 'string') {
                     setMessages(prev => [...prev, {
                         role: 'ai',
                         text: msg,
@@ -91,10 +92,28 @@ export function AIPreview() {
                 console.log(`Subscription status for chat_${chatId}:`, status);
             });
 
+        // 2. Polling Fallback (every 3s if loading)
+        let pollInterval: NodeJS.Timeout;
+        if (loading) {
+            console.log("Starting polling fallback...");
+            pollInterval = setInterval(async () => {
+                if (isCancelled) return;
+                const res = await checkAIResponse(chatId);
+                if (!isCancelled && res.success && res.message) {
+                    console.log("Polling success:", res.message);
+                    setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
+                    setLoading(false);
+                    clearInterval(pollInterval);
+                }
+            }, 3000);
+        }
+
         return () => {
+            isCancelled = true;
             supabase.removeChannel(channel);
+            if (pollInterval) clearInterval(pollInterval);
         };
-    }, [chatId]);
+    }, [chatId, loading]);
 
     return (
         <Sheet>

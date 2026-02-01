@@ -175,3 +175,25 @@ export async function generatePublicChatLink() {
         return { error: e.message };
     }
 }
+
+export async function checkAIResponse(chatId: string) {
+    try {
+        const supabase = await createClient();
+        // Check for the temporary key
+        const { data, error } = await supabase
+            .from("system_configs")
+            .select("value")
+            .eq("key", `chat_response_${chatId}`)
+            .single();
+
+        if (data && data.value) {
+            // Found it! Clean up (consume once)
+            await supabase.from("system_configs").delete().eq("key", `chat_response_${chatId}`);
+            return { success: true, message: data.value };
+        }
+
+        return { success: false };
+    } catch (e) {
+        return { success: false };
+    }
+}
