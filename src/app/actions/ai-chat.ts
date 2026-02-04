@@ -33,11 +33,11 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
             where: { id: leadId },
             create: {
                 id: leadId,
-                whatsapp: `preview_${profile.tenantId}`,
+                whatsapp: `preview_${profile.tenantId}_${leadId}`,
                 name: `Chat IA - ${formattedDate}`,
                 pushName: `Simulado por ${profile.email}`, // Usamos pushName para guardar a origem internamente
                 tenantId: profile.tenantId,
-                instanceName: `preview_${profile.tenantId}`
+                instanceName: `preview_${profile.tenantId}_${leadId}`
             },
             update: {
                 updatedAt: new Date()
@@ -62,7 +62,7 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
                 preview: true,
                 chatApp: true,
                 message_type: "extendedTextMessage",
-                instanceName: `preview_${profile.tenantId}`,
+                instanceName: `preview_${profile.tenantId}_${leadId}`,
                 messageId: crypto.randomUUID()
             })
         });
@@ -157,11 +157,11 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
             where: { id: leadId },
             create: {
                 id: leadId,
-                whatsapp: `public_${tenantId.substring(0, 8)}`,
+                whatsapp: `public_${tenantId.substring(0, 8)}_${leadId}`,
                 name: `Chat IA - ${formattedDate}`,
                 pushName: "Acesso via Link",
                 tenantId: tenantId,
-                instanceName: `preview_${tenantId}`
+                instanceName: `preview_${tenantId}_${leadId}`
             },
             update: {
                 updatedAt: new Date()
@@ -182,7 +182,7 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
                 preview: true,
                 chatApp: true,
                 message_type: "extendedTextMessage",
-                instanceName: `preview_${tenantId}`,
+                instanceName: `preview_${tenantId}_${leadId}`,
                 messageId: crypto.randomUUID()
             })
         });
