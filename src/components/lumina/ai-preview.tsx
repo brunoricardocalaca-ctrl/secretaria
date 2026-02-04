@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalLink } from "lucide-react";
 import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
@@ -337,12 +338,18 @@ export function AIPreview() {
                 {/* Input Area */}
                 <div className="p-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
                     <div className="flex gap-2">
-                        <Input
+                        <Textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSend();
+                                }
+                            }}
                             placeholder="Mande uma mensagem..."
-                            className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-amber-500/30 h-10 transition-all placeholder:text-gray-600"
+                            rows={1}
+                            className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-amber-500/30 min-h-[40px] max-h-[120px] transition-all placeholder:text-gray-600 resize-none py-2.5"
                         />
                         <Button
                             onClick={handleSend}

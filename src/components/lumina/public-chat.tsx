@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Bot, Send, User, Loader2, RefreshCw, AlertCircle } from "lucide-react";
 import { sendPublicAIPreviewMessage, checkAIResponse, getPublicChatInfo } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
@@ -226,12 +226,18 @@ export function PublicChat({ token }: { token: string }) {
             {/* Input Area */}
             <div className="p-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
                 <div className="flex gap-2 relative">
-                    <Input
+                    <Textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                            }
+                        }}
                         placeholder="Digite sua mensagem..."
-                        className="bg-white/5 border-white/10 text-white rounded-xl pl-6 pr-14 h-12 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all shadow-2xl placeholder:text-gray-600"
+                        rows={1}
+                        className="bg-white/5 border-white/10 text-white rounded-xl pl-6 pr-14 min-h-[48px] max-h-[120px] focus:ring-amber-500/30 focus:border-amber-500/50 transition-all shadow-2xl placeholder:text-gray-600 resize-none py-3.5"
                     />
                     <Button
                         onClick={handleSend}
