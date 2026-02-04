@@ -28,6 +28,24 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
         const leadId = chatId || crypto.randomUUID();
         const now = new Date();
         const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        const previewInstanceName = `preview_${profile.tenantId}`;
+
+        // Ensure the preview instance exists to avoid FK error
+        const existingInstance = await prisma.whatsappInstance.findUnique({
+            where: { internalName: previewInstanceName }
+        });
+
+        if (!existingInstance) {
+            console.log(`[AI Preview] Creating missing instance for ${profile.tenantId}`);
+            await prisma.whatsappInstance.create({
+                data: {
+                    tenantId: profile.tenantId,
+                    name: 'Chat de Teste IA',
+                    internalName: previewInstanceName,
+                    status: 'connected'
+                }
+            });
+        }
 
         await prisma.lead.upsert({
             where: { id: leadId },
@@ -35,35 +53,53 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
                 id: leadId,
                 whatsapp: `preview_${profile.tenantId}_${leadId}`,
                 name: `Chat IA - ${formattedDate}`,
-                pushName: `Simulado por ${profile.email}`, // Usamos pushName para guardar a origem internamente
+                pushName: `Simulado por ${profile.email}`,
                 tenantId: profile.tenantId,
-                instanceName: `preview_${profile.tenantId}_${leadId}`
+                instanceName: previewInstanceName // Now safe to use fixed instance
             },
             update: {
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                instanceName: previewInstanceName
             }
         });
+
+        const assistantName = profile.tenant.assistantName || "Secretária";
 
         // 1. Buscar Contexto na Base de Conhecimento
         const contextResults = await searchKnowledgeBase(message, 3);
         const contextText = contextResults.map(r => r.content).join("\n\n---\n\n");
 
-        // 2. Chamada para o n8n
+        // 2. Chamada para o n8n - Mimicando estrutura da Evolution API
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                message,
-                chatId: leadId, // Send conversation session ID
-                datetime: new Date().toISOString(),
-                context: contextText, // Send retrieved info
-                tenantId: profile.tenantId,
-                agentName: (profile.tenant as any).assistantName || (profile.tenant as any).configs?.assistantName || (profile.tenant as any).configs?.agentName || "Secretária",
-                preview: true,
-                chatApp: true,
-                message_type: "extendedTextMessage",
-                instanceName: `preview_${profile.tenantId}_${leadId}`,
-                messageId: crypto.randomUUID()
+                event: "messages.upsert",
+                instance: previewInstanceName,
+                data: {
+                    messages: [{
+                        key: {
+                            remoteJid: `preview_${profile.tenantId}_${leadId}`,
+                            fromMe: false,
+                            id: crypto.randomUUID()
+                        },
+                        pushName: `Simulado por ${profile.email}`,
+                        message: {
+                            extendedTextMessage: {
+                                text: message
+                            }
+                        },
+                        messageTimestamp: Math.floor(Date.now() / 1000),
+                        // Campos extras para controle interno no n8n
+                        metadata: {
+                            preview: true,
+                            chatApp: true,
+                            tenantId: profile.tenantId,
+                            agentName: assistantName,
+                            context: contextText
+                        }
+                    }]
+                }
             })
         });
 
@@ -152,6 +188,24 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
         const leadId = chatId || providedChatId || crypto.randomUUID();
         const now = new Date();
         const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        const previewInstanceName = `preview_${tenantId}`;
+
+        // Ensure the preview instance exists to avoid FK error
+        const existingInstance = await prisma.whatsappInstance.findUnique({
+            where: { internalName: previewInstanceName }
+        });
+
+        if (!existingInstance) {
+            console.log(`[Public AI Preview] Creating missing instance for ${tenantId}`);
+            await prisma.whatsappInstance.create({
+                data: {
+                    tenantId: tenantId,
+                    name: 'Chat de Teste IA',
+                    internalName: previewInstanceName,
+                    status: 'connected'
+                }
+            });
+        }
 
         await prisma.lead.upsert({
             where: { id: leadId },
@@ -161,29 +215,47 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
                 name: `Chat IA - ${formattedDate}`,
                 pushName: "Acesso via Link",
                 tenantId: tenantId,
-                instanceName: `preview_${tenantId}_${leadId}`
+                instanceName: previewInstanceName
             },
             update: {
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                instanceName: previewInstanceName
             }
         });
 
-        // 5. Call N8N
+        const assistantName = tenant.assistantName || "Secretária";
+
+        // 5. Call N8N - Mimicando estrutura da Evolution API
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                message,
-                chatId: leadId,
-                datetime: new Date().toISOString(),
-                context: contextText,
-                tenantId: tenantId,
-                agentName: (tenant as any).assistantName || (tenant as any).configs?.assistantName || (tenant as any).configs?.agentName || "Secretária",
-                preview: true,
-                chatApp: true,
-                message_type: "extendedTextMessage",
-                instanceName: `preview_${tenantId}_${leadId}`,
-                messageId: crypto.randomUUID()
+                event: "messages.upsert",
+                instance: previewInstanceName,
+                data: {
+                    messages: [{
+                        key: {
+                            remoteJid: `public_${tenantId.substring(0, 8)}_${leadId}`,
+                            fromMe: false,
+                            id: crypto.randomUUID()
+                        },
+                        pushName: "Acesso via Link",
+                        message: {
+                            extendedTextMessage: {
+                                text: message
+                            }
+                        },
+                        messageTimestamp: Math.floor(Date.now() / 1000),
+                        // Campos extras para controle interno no n8n
+                        metadata: {
+                            preview: true,
+                            chatApp: true,
+                            tenantId: tenantId,
+                            agentName: assistantName,
+                            context: contextText
+                        }
+                    }]
+                }
             })
         });
 
@@ -259,5 +331,34 @@ export async function checkAIResponse(chatId: string) {
     } catch (e: any) {
         console.error("[POLLING SERVER] Error:", e);
         return { success: false, error: e.message };
+    }
+}
+
+export async function getPublicChatInfo(token: string) {
+    try {
+        let tenantId = "";
+        try {
+            const decoded = JSON.parse(atob(token));
+            tenantId = decoded.tenantId;
+        } catch (e) {
+            tenantId = atob(token);
+        }
+
+        if (!tenantId) return { error: "Token inválido" };
+
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { assistantName: true, name: true }
+        });
+
+        if (!tenant) return { error: "Tenant não encontrado" };
+
+        return {
+            success: true,
+            assistantName: tenant.assistantName || "Secretária",
+            tenantName: tenant.name
+        };
+    } catch (e: any) {
+        return { error: e.message };
     }
 }

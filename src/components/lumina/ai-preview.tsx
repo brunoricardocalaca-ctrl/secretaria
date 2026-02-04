@@ -9,6 +9,7 @@ import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalL
 import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { getAssistantStatus } from "@/app/actions/profile";
 
 export function AIPreview() {
     const [chatId, setChatId] = useState(() => crypto.randomUUID());
@@ -19,7 +20,20 @@ export function AIPreview() {
     const [loading, setLoading] = useState(false);
     const [generatingLink, setGeneratingLink] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [assistantName, setAssistantName] = useState("Lumina");
+    const abortControllerRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        async function fetchAssistant() {
+            const res = await getAssistantStatus();
+            if (res.success && res.name) {
+                setAssistantName(res.name);
+                setMessages([{ role: 'ai', text: `Olá! Sou ${res.name}, sua assistente virtual. Como posso ajudar com os agendamentos hoje?`, timestamp: new Date() }]);
+            }
+        }
+        fetchAssistant();
+    }, []);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -28,10 +42,18 @@ export function AIPreview() {
     }, [messages]);
 
     function handleReset() {
+        // Cancel any pending request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+
+        setLoading(false);
         setMessages([
-            { role: 'ai', text: "Olá! Sou sua assistente virtual. Como posso ajudar com os agendamentos hoje?", timestamp: new Date() }
+            { role: 'ai', text: `Olá! Sou ${assistantName}, sua assistente virtual. Como posso ajudar com os agendamentos hoje?`, timestamp: new Date() }
         ]);
         setChatId(crypto.randomUUID());
+        messageReceivedRef.current = false;
     }
 
     async function handleShare(action: 'copy' | 'visit') {
@@ -62,12 +84,27 @@ export function AIPreview() {
         setMessages(prev => [...prev, { role: 'user', text: userMsg, timestamp: new Date() }]);
         setLoading(true);
 
-        // Fire and forget (backend will trigger N8N, which triggers API, which triggers Realtime)
-        const res = await sendAIPreviewMessage(userMsg, chatId);
+        // Create new AbortController for this request
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
 
-        if (!res.success) {
-            setMessages(prev => [...prev, { role: 'ai', text: `⚠️ Erro: ${res.error}`, timestamp: new Date() }]);
-            setLoading(false);
+        try {
+            // Fire and forget (backend will trigger N8N, which triggers API, which triggers Realtime)
+            const res = await sendAIPreviewMessage(userMsg, chatId);
+
+            if (!res.success && !controller.signal.aborted) {
+                setMessages(prev => [...prev, { role: 'ai', text: `⚠️ Erro: ${res.error}`, timestamp: new Date() }]);
+                setLoading(false);
+            }
+        } catch (error: any) {
+            if (error.name !== 'AbortError') {
+                console.error("Failed to send message:", error);
+                setLoading(false);
+            }
+        } finally {
+            if (abortControllerRef.current === controller) {
+                abortControllerRef.current = null;
+            }
         }
         // Loading state remains true until Realtime event arrives (or timeout)
     }
@@ -185,8 +222,8 @@ export function AIPreview() {
                             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-900/20">
                                 <Bot className="w-5 h-5 text-amber-500" />
                             </div>
-                            <div className="flex flex-col">
-                                <SheetTitle className="text-white text-sm font-bold tracking-tight text-left">Assistente Lumina</SheetTitle>
+                            <div className="flex flex-col text-left">
+                                <SheetTitle className="text-white text-sm font-bold tracking-tight text-left">Assistente {assistantName}</SheetTitle>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                     <p className="text-[10px] text-amber-500/70 font-medium uppercase tracking-wider">Preview em Tempo Real</p>

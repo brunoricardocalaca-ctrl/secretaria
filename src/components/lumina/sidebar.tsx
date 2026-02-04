@@ -90,7 +90,16 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
 
     const handleToggleStatus = async () => {
         if (!attendant) return;
-        const newStatus = !attendant.isOnline;
+
+        const currentIsOnline = attendant.isOnline;
+
+        // If it's currently online and user wants to deactivate, ask for confirmation
+        if (currentIsOnline) {
+            const confirmed = window.confirm(`Deseja desativar o "${attendant.name || "seu assistente"}"?`);
+            if (!confirmed) return;
+        }
+
+        const newStatus = !currentIsOnline;
         setAttendant({ ...attendant, isOnline: newStatus });
         await toggleAssistantStatus();
     };

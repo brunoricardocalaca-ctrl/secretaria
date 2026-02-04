@@ -43,7 +43,8 @@ export async function updateTenantConfig(newConfigs: any, tenantName?: string) {
             where: { id: tenantId },
             data: {
                 configs: mergedConfigs as any,
-                ...(tenantName ? { name: tenantName } : {})
+                ...(tenantName ? { name: tenantName } : {}),
+                ...(newConfigs.assistantName ? { assistantName: newConfigs.assistantName } : {})
             }
         });
 

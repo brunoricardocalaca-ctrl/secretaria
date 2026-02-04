@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Send, User, Loader2, RefreshCw, AlertCircle } from "lucide-react";
-import { sendPublicAIPreviewMessage, checkAIResponse } from "@/app/actions/ai-chat";
+import { sendPublicAIPreviewMessage, checkAIResponse, getPublicChatInfo } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,7 +23,20 @@ export function PublicChat({ token }: { token: string }) {
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [assistantName, setAssistantName] = useState("Assistente Virtual");
+    const abortControllerRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        async function fetchInfo() {
+            const res = await getPublicChatInfo(token);
+            if (res.success && res.assistantName) {
+                setAssistantName(res.assistantName);
+                setMessages([{ role: 'ai', text: `Olá! Sou ${res.assistantName}, sua assistente virtual. Como posso ajudar?`, timestamp: new Date() }]);
+            }
+        }
+        fetchInfo();
+    }, [token]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -32,8 +45,15 @@ export function PublicChat({ token }: { token: string }) {
     }, [messages]);
 
     function handleReset() {
+        // Cancel any pending request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+
+        setLoading(false);
         setMessages([
-            { role: 'ai', text: "Olá! Sou a assistente virtual. Como posso ajudar?", timestamp: new Date() }
+            { role: 'ai', text: `Olá! Sou ${assistantName}, sua assistente virtual. Como posso ajudar?`, timestamp: new Date() }
         ]);
         setChatId(crypto.randomUUID());
     }
@@ -46,11 +66,26 @@ export function PublicChat({ token }: { token: string }) {
         setMessages(prev => [...prev, { role: 'user', text: userMsg, timestamp: new Date() }]);
         setLoading(true);
 
-        const res = await sendPublicAIPreviewMessage(userMsg, token, chatId);
+        // Create new AbortController for this request
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
 
-        if (!res.success) {
-            setMessages(prev => [...prev, { role: 'ai', text: `⚠️ ${res.error}`, timestamp: new Date() }]);
-            setLoading(false);
+        try {
+            const res = await sendPublicAIPreviewMessage(userMsg, token, chatId);
+
+            if (!res.success && !controller.signal.aborted) {
+                setMessages(prev => [...prev, { role: 'ai', text: `⚠️ ${res.error}`, timestamp: new Date() }]);
+                setLoading(false);
+            }
+        } catch (error: any) {
+            if (error.name !== 'AbortError') {
+                console.error("Failed to send message:", error);
+                setLoading(false);
+            }
+        } finally {
+            if (abortControllerRef.current === controller) {
+                abortControllerRef.current = null;
+            }
         }
         // Loading state remains true until Realtime event arrives
     }
@@ -109,7 +144,7 @@ export function PublicChat({ token }: { token: string }) {
                         <Bot className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                        <h3 className="text-white font-bold tracking-tight">Assistente Virtual</h3>
+                        <h3 className="text-white font-bold tracking-tight">{assistantName}</h3>
                         <div className="flex items-center gap-1.5">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -188,7 +223,7 @@ export function PublicChat({ token }: { token: string }) {
                         <RefreshCw className="w-3 h-3 mr-1.5 opacity-50" /> Reiniciar Conversa
                     </Button>
                     <p className="text-[9px] text-gray-800 uppercase tracking-[0.2em] font-bold">
-                        Powered by <span className="text-amber-500/40">Lumina AI</span>
+                        Powered by <span className="text-amber-500/40 font-black">{assistantName} AI</span>
                     </p>
                 </div>
             </div>
