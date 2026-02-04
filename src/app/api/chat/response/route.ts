@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
         console.log("Extracted chatId:", chatId);
         console.log("Extracted content:", content);
 
-        // Clean chatId if it has "=" prefix (n8n expression error)
-        const cleanChatId = typeof chatId === 'string' ? chatId.replace(/^=/, '') : chatId;
+        // Clean chatId if it has "=" prefix (n8n expression error) and trim spaces
+        const cleanChatId = typeof chatId === 'string' ? chatId.replace(/^=/, '').trim() : chatId;
         const cleanContent = typeof content === 'string' ? content.replace(/^=/, '') : content;
 
         console.log("Cleaned chatId:", cleanChatId);
