@@ -21,8 +21,17 @@ export function AIPreview() {
     const [generatingLink, setGeneratingLink] = useState(false);
     const [copied, setCopied] = useState(false);
     const [assistantName, setAssistantName] = useState("Lumina");
+    const [loadingLabel, setLoadingLabel] = useState("Pensando...");
     const abortControllerRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const statusLabels = [
+        "Pensando...",
+        "Buscando dados...",
+        "Estruturando resposta...",
+        "Quase lá...",
+        "Digitando..."
+    ];
 
     useEffect(() => {
         async function fetchAssistant() {
@@ -112,10 +121,19 @@ export function AIPreview() {
     // Track if message was already received (prevent duplicates from Realtime + Polling)
     const messageReceivedRef = useRef(false);
 
-    // Reset the flag when loading changes to true (new message sent)
+    // Reset the flag and label when loading changes to true (new message sent)
     useEffect(() => {
         if (loading) {
             messageReceivedRef.current = false;
+            setLoadingLabel(statusLabels[0]);
+
+            let currentIdx = 0;
+            const interval = setInterval(() => {
+                currentIdx = (currentIdx + 1) % statusLabels.length;
+                setLoadingLabel(statusLabels[currentIdx]);
+            }, 2500); // Change label every 2.5 seconds
+
+            return () => clearInterval(interval);
         }
     }, [loading]);
 
@@ -309,9 +327,9 @@ export function AIPreview() {
                         </div>
                     ))}
                     {loading && (
-                        <div className="flex items-center gap-2 text-gray-500 text-xs ml-12">
+                        <div className="flex items-center gap-2 text-gray-500 text-xs ml-12 animate-pulse">
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            Digitando...
+                            {loadingLabel}
                         </div>
                     )}
                 </div>

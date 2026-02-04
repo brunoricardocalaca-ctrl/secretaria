@@ -24,8 +24,17 @@ export function PublicChat({ token }: { token: string }) {
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [assistantName, setAssistantName] = useState("Assistente Virtual");
+    const [loadingLabel, setLoadingLabel] = useState("Pensando...");
     const abortControllerRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const statusLabels = [
+        "Pensando...",
+        "Buscando dados...",
+        "Estruturando resposta...",
+        "Quase lá...",
+        "Digitando..."
+    ];
 
     useEffect(() => {
         async function fetchInfo() {
@@ -37,6 +46,21 @@ export function PublicChat({ token }: { token: string }) {
         }
         fetchInfo();
     }, [token]);
+
+    // Reset label when loading changes
+    useEffect(() => {
+        if (loading) {
+            setLoadingLabel(statusLabels[0]);
+
+            let currentIdx = 0;
+            const interval = setInterval(() => {
+                currentIdx = (currentIdx + 1) % statusLabels.length;
+                setLoadingLabel(statusLabels[currentIdx]);
+            }, 2500);
+
+            return () => clearInterval(interval);
+        }
+    }, [loading]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -194,7 +218,7 @@ export function PublicChat({ token }: { token: string }) {
                 {loading && (
                     <div className="flex items-center gap-2 text-gray-500 text-xs ml-12 animate-pulse">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span className="italic">Digitando...</span>
+                        {loadingLabel}
                     </div>
                 )}
             </div>

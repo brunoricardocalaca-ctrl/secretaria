@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   title: "Nexus | Secretar.ia",
   description: "Plataforma de inteligência e automação clínica Nexus.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
     apple: "/icon.svg",
   },
   openGraph: {
