@@ -69,37 +69,22 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
         const contextResults = await searchKnowledgeBase(message, 3);
         const contextText = contextResults.map(r => r.content).join("\n\n---\n\n");
 
-        // 2. Chamada para o n8n - Mimicando estrutura da Evolution API
+        // 2. Chamada para o n8n
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                event: "messages.upsert",
-                instance: previewInstanceName,
-                data: {
-                    messages: [{
-                        key: {
-                            remoteJid: `preview_${profile.tenantId}_${leadId}`,
-                            fromMe: false,
-                            id: crypto.randomUUID()
-                        },
-                        pushName: `Simulado por ${profile.email}`,
-                        message: {
-                            extendedTextMessage: {
-                                text: message
-                            }
-                        },
-                        messageTimestamp: Math.floor(Date.now() / 1000),
-                        // Campos extras para controle interno no n8n
-                        metadata: {
-                            preview: true,
-                            chatApp: true,
-                            tenantId: profile.tenantId,
-                            agentName: assistantName,
-                            context: contextText
-                        }
-                    }]
-                }
+                message,
+                chatId: leadId, // Send conversation session ID
+                datetime: new Date().toISOString(),
+                context: contextText, // Send retrieved info
+                tenantId: profile.tenantId,
+                agentName: assistantName,
+                preview: true,
+                chatApp: true,
+                message_type: "extendedTextMessage",
+                instanceName: previewInstanceName,
+                messageId: crypto.randomUUID()
             })
         });
 
@@ -225,37 +210,22 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
 
         const assistantName = tenant.assistantName || "Secretária";
 
-        // 5. Call N8N - Mimicando estrutura da Evolution API
+        // 5. Call N8N
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                event: "messages.upsert",
-                instance: previewInstanceName,
-                data: {
-                    messages: [{
-                        key: {
-                            remoteJid: `public_${tenantId.substring(0, 8)}_${leadId}`,
-                            fromMe: false,
-                            id: crypto.randomUUID()
-                        },
-                        pushName: "Acesso via Link",
-                        message: {
-                            extendedTextMessage: {
-                                text: message
-                            }
-                        },
-                        messageTimestamp: Math.floor(Date.now() / 1000),
-                        // Campos extras para controle interno no n8n
-                        metadata: {
-                            preview: true,
-                            chatApp: true,
-                            tenantId: tenantId,
-                            agentName: assistantName,
-                            context: contextText
-                        }
-                    }]
-                }
+                message,
+                chatId: leadId,
+                datetime: new Date().toISOString(),
+                context: contextText,
+                tenantId: tenantId,
+                agentName: assistantName,
+                preview: true,
+                chatApp: true,
+                message_type: "extendedTextMessage",
+                instanceName: previewInstanceName,
+                messageId: crypto.randomUUID()
             })
         });
 
