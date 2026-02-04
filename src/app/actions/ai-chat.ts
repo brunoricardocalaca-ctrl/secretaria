@@ -78,10 +78,12 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+                // Top-level fields (Maintained for current workflows)
                 message,
                 chatId: leadId,
+                chat_id: leadId, // Alias just in case
                 datetime: formattedISO,
-                timestamp: formattedISO, // Para compatibilidade com fórmulas do n8n
+                timestamp: formattedISO,
                 context: contextText,
                 tenantId: profile.tenantId,
                 agentName: assistantName,
@@ -89,7 +91,25 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
                 chatApp: true,
                 message_type: "extendedTextMessage",
                 instanceName: previewInstanceName,
-                messageId: crypto.randomUUID()
+                messageId: crypto.randomUUID(),
+
+                // Compatibility for N8N formulas like JSON.parse($json.messages.last())
+                messages: [
+                    JSON.stringify({
+                        key: {
+                            remoteJid: `preview_${profile.tenantId}_${leadId}`,
+                            fromMe: false,
+                            id: crypto.randomUUID()
+                        },
+                        pushName: `Simulado por ${profile.email}`,
+                        message: {
+                            conversation: message,
+                            extendedTextMessage: { text: message }
+                        },
+                        messageTimestamp: Math.floor(nowUTC.getTime() / 1000),
+                        timestamp: formattedISO // This is what the user's formula is looking for
+                    })
+                ]
             })
         });
 
@@ -224,10 +244,12 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+                // Top-level fields
                 message,
                 chatId: leadId,
+                chat_id: leadId,
                 datetime: formattedISO,
-                timestamp: formattedISO, // Para compatibilidade com fórmulas do n8n
+                timestamp: formattedISO,
                 context: contextText,
                 tenantId: tenantId,
                 agentName: assistantName,
@@ -235,7 +257,25 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
                 chatApp: true,
                 message_type: "extendedTextMessage",
                 instanceName: previewInstanceName,
-                messageId: crypto.randomUUID()
+                messageId: crypto.randomUUID(),
+
+                // Compatibility for N8N formulas
+                messages: [
+                    JSON.stringify({
+                        key: {
+                            remoteJid: `public_${tenantId.substring(0, 8)}_${leadId}`,
+                            fromMe: false,
+                            id: crypto.randomUUID()
+                        },
+                        pushName: "Acesso via Link",
+                        message: {
+                            conversation: message,
+                            extendedTextMessage: { text: message }
+                        },
+                        messageTimestamp: Math.floor(nowUTC.getTime() / 1000),
+                        timestamp: formattedISO
+                    })
+                ]
             })
         });
 
