@@ -106,7 +106,8 @@ export async function getConnectQR(internalName: string) {
     }
 }
 
-export async function deleteInstanceAction(internalName: string) {
+export async function deleteInstanceAction(rawInternalName: string) {
+    const internalName = rawInternalName.trim();
     console.log(`[Action] deleteInstanceAction called for: ${internalName}`);
     try {
         const { tenantId } = await getTenantContext();
@@ -122,8 +123,18 @@ export async function deleteInstanceAction(internalName: string) {
 
         // 1. Delete from Evolution
         console.log(`[Action] Calling Evolution API delete...`);
-        await client.deleteInstance(internalName);
-        console.log(`[Action] Evolution API delete successful`);
+        try {
+            await client.deleteInstance(internalName);
+            console.log(`[Action] Evolution API delete successful`);
+        } catch (evError: any) {
+            console.error(`[Action] Evolution API delete failed:`, evError.message);
+            // If it's already NOT FOUND in evolution, we should still delete from our DB
+            if (evError.message?.toLowerCase().includes("not found") || evError.message?.includes("404")) {
+                console.log(`[Action] Instance already gone from Evolution, proceeding with DB deletion`);
+            } else {
+                throw evError; // Re-throw other errors
+            }
+        }
 
         // 2. Delete from DB
         console.log(`[Action] Deleting from DB with id: ${inst.id}`);
@@ -140,7 +151,8 @@ export async function deleteInstanceAction(internalName: string) {
     }
 }
 
-export async function logoutInstanceAction(internalName: string) {
+export async function logoutInstanceAction(rawInternalName: string) {
+    const internalName = rawInternalName.trim();
     try {
         const { tenantId } = await getTenantContext();
         const inst = await prisma.whatsappInstance.findFirst({
@@ -149,7 +161,15 @@ export async function logoutInstanceAction(internalName: string) {
         if (!inst) throw new Error("Instance not found or unauthorized");
 
         console.log(`[Action] Logging out instance: ${internalName}`);
-        await client.logoutInstance(internalName);
+        try {
+            await client.logoutInstance(internalName);
+        } catch (evError: any) {
+            console.error(`[Action] Evolution API logout failed:`, evError.message);
+            // Similar to delete, if 404 just ignore
+            if (!evError.message?.toLowerCase().includes("not found") && !evError.message?.includes("404")) {
+                throw evError;
+            }
+        }
 
         revalidatePath("/dashboard/channels");
         return { success: true };
