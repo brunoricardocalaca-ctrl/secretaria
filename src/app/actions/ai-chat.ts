@@ -70,14 +70,19 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
         const contextText = contextResults.map(r => r.content).join("\n\n---\n\n");
 
         // 2. Chamada para o n8n
+        const nowUTC = new Date();
+        const brazilTime = new Date(nowUTC.getTime() - (3 * 60 * 60 * 1000));
+        const formattedISO = brazilTime.toISOString();
+
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 message,
-                chatId: leadId, // Send conversation session ID
-                datetime: new Date().toISOString(),
-                context: contextText, // Send retrieved info
+                chatId: leadId,
+                datetime: formattedISO,
+                timestamp: formattedISO, // Para compatibilidade com fórmulas do n8n
+                context: contextText,
                 tenantId: profile.tenantId,
                 agentName: assistantName,
                 preview: true,
@@ -211,13 +216,18 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
         const assistantName = tenant.assistantName || "Secretária";
 
         // 5. Call N8N
+        const nowUTC = new Date();
+        const brazilTime = new Date(nowUTC.getTime() - (3 * 60 * 60 * 1000));
+        const formattedISO = brazilTime.toISOString();
+
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 message,
                 chatId: leadId,
-                datetime: new Date().toISOString(),
+                datetime: formattedISO,
+                timestamp: formattedISO, // Para compatibilidade com fórmulas do n8n
                 context: contextText,
                 tenantId: tenantId,
                 agentName: assistantName,
