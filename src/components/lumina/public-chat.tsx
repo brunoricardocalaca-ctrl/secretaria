@@ -27,6 +27,7 @@ export function PublicChat({ token }: { token: string }) {
     const [loadingLabel, setLoadingLabel] = useState("Pensando...");
     const abortControllerRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const statusLabels = [
         "Pensando...",
@@ -113,6 +114,14 @@ export function PublicChat({ token }: { token: string }) {
         }
         // Loading state remains true until Realtime event arrives
     }
+
+    // Auto-resize textarea height
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+        }
+    }, [input]);
 
     // Realtime Subscription (persistent, only depends on chatId)
     useEffect(() => {
@@ -227,6 +236,7 @@ export function PublicChat({ token }: { token: string }) {
             <div className="p-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
                 <div className="flex gap-2 relative">
                     <Textarea
+                        ref={textareaRef}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -237,7 +247,7 @@ export function PublicChat({ token }: { token: string }) {
                         }}
                         placeholder="Digite sua mensagem..."
                         rows={1}
-                        className="bg-white/5 border-white/10 text-white rounded-xl pl-6 pr-14 min-h-[48px] max-h-[120px] focus:ring-amber-500/30 focus:border-amber-500/50 transition-all shadow-2xl placeholder:text-gray-600 resize-none py-3.5"
+                        className="bg-white/5 border-white/10 text-white rounded-xl pl-6 pr-14 min-h-[48px] max-h-[120px] focus:ring-amber-500/30 focus:border-amber-500/50 transition-all shadow-2xl placeholder:text-gray-600 resize-none py-3.5 overflow-y-auto"
                     />
                     <Button
                         onClick={handleSend}

@@ -25,6 +25,7 @@ export function AIPreview() {
     const [loadingLabel, setLoadingLabel] = useState("Pensando...");
     const abortControllerRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const statusLabels = [
         "Pensando...",
@@ -118,6 +119,14 @@ export function AIPreview() {
         }
         // Loading state remains true until Realtime event arrives (or timeout)
     }
+
+    // Auto-resize textarea height
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+        }
+    }, [input]);
 
     // Track if message was already received (prevent duplicates from Realtime + Polling)
     const messageReceivedRef = useRef(false);
@@ -339,6 +348,7 @@ export function AIPreview() {
                 <div className="p-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
                     <div className="flex gap-2">
                         <Textarea
+                            ref={textareaRef}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {
@@ -349,7 +359,7 @@ export function AIPreview() {
                             }}
                             placeholder="Mande uma mensagem..."
                             rows={1}
-                            className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-amber-500/30 min-h-[40px] max-h-[120px] transition-all placeholder:text-gray-600 resize-none py-2.5"
+                            className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-amber-500/30 min-h-[40px] max-h-[120px] transition-all placeholder:text-gray-600 resize-none py-2.5 overflow-y-auto"
                         />
                         <Button
                             onClick={handleSend}
