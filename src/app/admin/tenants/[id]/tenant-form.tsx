@@ -39,6 +39,25 @@ export function TenantForm({ tenant }: { tenant: any }) {
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-gray-300">Nome da Assistente (IA)</Label>
+                            <Input name="assistantName" defaultValue={tenant.assistantName || (tenant.configs as any)?.assistantName || (tenant.configs as any)?.agentName || ""} className="bg-[#050505] border-[#2a2a2a] text-white" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-gray-300">Status da IA</Label>
+                            <Select name="isAiActive" defaultValue={tenant.isAiActive ? "true" : "false"}>
+                                <SelectTrigger className="bg-[#050505] border-[#2a2a2a] text-white">
+                                    <SelectValue placeholder="Status da IA" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-[#121212] border-[#2a2a2a] text-white">
+                                    <SelectItem value="true">Ativa (Respondendo)</SelectItem>
+                                    <SelectItem value="false">Desativada</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <Label className="text-gray-300">Plano Atual</Label>
                         <Select name="planStatus" defaultValue={tenant.planStatus}>

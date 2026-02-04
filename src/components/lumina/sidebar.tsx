@@ -56,6 +56,9 @@ export const menuItems = [
     },
 ];
 
+import { getAssistantStatus, toggleAssistantStatus, updateAssistantName } from "@/app/actions/profile";
+import { Power, PowerOff, Edit2, Check, X } from "lucide-react";
+
 interface SidebarContentProps {
     isCollapsed?: boolean;
     isMobile?: boolean;
@@ -64,6 +67,63 @@ interface SidebarContentProps {
 
 export function SidebarContent({ isCollapsed = false, isMobile = false, onNavigate }: SidebarContentProps) {
     const pathname = usePathname();
+    const [attendant, setAttendant] = useState<{ name: string; isOnline: boolean; isWhatsappConnected: boolean } | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [editingName, setEditingName] = useState(false);
+    const [newName, setNewName] = useState("");
+
+    useEffect(() => {
+        async function loadStatus() {
+            const res = await getAssistantStatus();
+            if (res.success) {
+                setAttendant({
+                    name: res.name!,
+                    isOnline: res.isOnline!,
+                    isWhatsappConnected: res.isWhatsappConnected!
+                });
+                setNewName(res.name!);
+            }
+            setLoading(false);
+        }
+        loadStatus();
+    }, []);
+
+    const handleToggleStatus = async () => {
+        if (!attendant) return;
+        const newStatus = !attendant.isOnline;
+        setAttendant({ ...attendant, isOnline: newStatus });
+        await toggleAssistantStatus();
+    };
+
+    const handleSaveName = async () => {
+        if (!newName.trim()) return;
+
+        // Optimistic update
+        setAttendant(prev => ({
+            name: newName,
+            isOnline: prev?.isOnline ?? true,
+            isWhatsappConnected: prev?.isWhatsappConnected ?? true
+        }));
+
+        setEditingName(false);
+        const res = await updateAssistantName(newName);
+
+        if (res?.error) {
+            console.error("Failed to save assistant name:", res.error);
+            // Optionally reload status to revert optimistic UI if failed
+            const retry = await getAssistantStatus();
+            if (retry.success) {
+                setAttendant({
+                    name: retry.name!,
+                    isOnline: retry.isOnline!,
+                    isWhatsappConnected: retry.isWhatsappConnected!
+                });
+            }
+        }
+    };
+
+    // Rule: Offline if toggle is off OR whatsapp is disconnected
+    const effectiveOnline = attendant?.isOnline && attendant?.isWhatsappConnected;
 
     return (
         <div className="flex flex-col h-full bg-glass">
@@ -105,7 +165,7 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                 const isActive = pathname === item.href;
                                 return (
                                     <Link
-                                        key={item.href}
+                                        key={item.name}
                                         href={item.href}
                                         onClick={onNavigate}
                                         title={isCollapsed ? item.name : ""}
@@ -149,24 +209,74 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
             <div className="p-4">
                 <div
                     className={cn(
-                        "relative overflow-hidden rounded-2xl bg-[#0F0F0F] border border-[#1f1f1f] group cursor-pointer transition-all duration-300",
-                        isCollapsed ? "p-3" : "p-5"
+                        "relative overflow-hidden rounded-2xl bg-[#0F0F0F] border border-[#1f1f1f] group transition-all duration-300",
+                        isCollapsed ? "p-3" : "p-4"
                     )}
                 >
                     <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                     <div className={cn("flex items-center gap-3 relative z-10", isCollapsed && "justify-center")}>
-                        <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center border border-[#2a2a2a] group-hover:border-amber-500/50 transition-colors shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center border border-[#2a2a2a] group-hover:border-amber-500/50 transition-colors shrink-0 overflow-hidden">
                             <Bot className="w-5 h-5 text-gray-400 group-hover:text-amber-400 transition-colors" />
                         </div>
                         {!isCollapsed && (
-                            <div className="animate-in fade-in slide-in-from-left-2 duration-300">
-                                <p className="text-sm font-semibold text-gray-200">Sua Secretária</p>
+                            <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
+                                <div className="flex items-center gap-1 group/name">
+                                    {editingName ? (
+                                        <div className="flex items-center gap-1 flex-1">
+                                            <input
+                                                autoFocus
+                                                value={newName}
+                                                onChange={(e) => setNewName(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                                                className="bg-transparent border-b border-amber-500 text-xs text-white focus:outline-none py-0.5 w-full"
+                                            />
+                                            <button onClick={handleSaveName}><Check className="w-3 h-3 text-green-500" /></button>
+                                            <button onClick={() => setEditingName(false)}><X className="w-3 h-3 text-red-500" /></button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="text-sm font-semibold text-gray-200 truncate">
+                                                {loading ? "Carregando..." : (attendant?.name || "Secretária")}
+                                            </p>
+                                            <button
+                                                onClick={() => setEditingName(true)}
+                                                className="opacity-0 group-hover/name:opacity-100 transition-opacity"
+                                            >
+                                                <Edit2 className="w-3 h-3 text-gray-500 hover:text-amber-400" />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    <p className="text-xs text-green-500 font-medium">Online Agora</p>
+                                    <span className={cn(
+                                        "w-1.5 h-1.5 rounded-full",
+                                        effectiveOnline ? "bg-green-500 animate-pulse" : "bg-red-500"
+                                    )} />
+                                    <p className={cn(
+                                        "text-[10px] font-medium uppercase tracking-wider",
+                                        effectiveOnline ? "text-green-500" : "text-red-500"
+                                    )}>
+                                        {effectiveOnline ? "Online" : (attendant?.isWhatsappConnected === false ? "WhatsApp Offline" : "Modo Offline")}
+                                    </p>
                                 </div>
                             </div>
+                        )}
+
+                        {/* Toggle Button */}
+                        {!isCollapsed && !loading && (
+                            <button
+                                onClick={handleToggleStatus}
+                                title={attendant?.isOnline ? "Desativar Modo Online" : "Ativar Modo Online"}
+                                className={cn(
+                                    "p-2 rounded-lg border transition-all relative z-20",
+                                    attendant?.isOnline
+                                        ? "bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20"
+                                        : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
+                                )}
+                            >
+                                {attendant?.isOnline ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
+                            </button>
                         )}
                     </div>
                 </div>

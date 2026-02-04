@@ -28,3 +28,4 @@ export default prisma;
 
 if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
 // Re-init trigger - 2024-05
+// trigger

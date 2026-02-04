@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check } from "lucide-react";
+import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalLink } from "lucide-react";
 import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -34,15 +34,20 @@ export function AIPreview() {
         setChatId(crypto.randomUUID());
     }
 
-    async function handleShare() {
+    async function handleShare(action: 'copy' | 'visit') {
         setGeneratingLink(true);
-        const res = await generatePublicChatLink();
+        const res = await generatePublicChatLink(chatId);
 
         if (res.success && res.token) {
             const link = `${window.location.origin}/public/chat/${res.token}`;
-            navigator.clipboard.writeText(link);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+
+            if (action === 'copy') {
+                navigator.clipboard.writeText(link);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } else {
+                window.open(link, '_blank');
+            }
         } else {
             alert("Erro ao gerar link de compartilhamento.");
         }
@@ -174,33 +179,60 @@ export function AIPreview() {
                 </Button>
             </SheetTrigger>
             <SheetContent className="bg-[#0A0A0A] border-l border-[#1F1F1F] text-white w-full sm:max-w-md p-0 flex flex-col h-full z-[100]">
-                <SheetHeader className="p-4 border-b border-[#1F1F1F] bg-[#121212]">
+                <SheetHeader className="p-4 pr-14 border-b border-white/5 bg-black/40 backdrop-blur-xl">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-                                <Bot className="w-5 h-5 text-white" />
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-900/20">
+                                <Bot className="w-5 h-5 text-amber-500" />
                             </div>
-                            <div>
-                                <SheetTitle className="text-white text-sm">Preview da Conversa</SheetTitle>
-                                <p className="text-xs text-gray-500">Simulação em tempo real</p>
+                            <div className="flex flex-col">
+                                <SheetTitle className="text-white text-sm font-bold tracking-tight text-left">Assistente Lumina</SheetTitle>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                    <p className="text-[10px] text-amber-500/70 font-medium uppercase tracking-wider">Preview em Tempo Real</p>
+                                </div>
                             </div>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleShare}
-                            disabled={generatingLink}
-                            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
-                            title="Compartilhar link de teste"
-                        >
-                            {generatingLink ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : copied ? (
-                                <Check className="w-4 h-4 text-green-400" />
-                            ) : (
-                                <Share2 className="w-4 h-4" />
+
+                        <div className="flex items-center gap-2">
+                            {/* Copy Feedback */}
+                            {copied && (
+                                <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-right-2 duration-300">
+                                    Link Copiado
+                                </span>
                             )}
-                        </Button>
+
+                            {/* Visit Site Button */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleShare('visit')}
+                                disabled={generatingLink}
+                                className="h-8 w-8 text-amber-500/50 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all rounded-lg"
+                                title="Abrir no Navegador"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                            </Button>
+
+                            {/* Copy Link Button */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleShare('copy')}
+                                disabled={generatingLink}
+                                className="h-8 w-8 text-amber-500/50 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all rounded-lg"
+                                title="Copiar Link"
+                            >
+                                {copied ? (
+                                    <Check className="w-4 h-4 text-green-400" />
+                                ) : (
+                                    <Share2 className="w-4 h-4" />
+                                )}
+                            </Button>
+
+                            {/* Empty space for the SheetClose X button (top-4 right-4) */}
+                            <div className="w-8" />
+                        </div>
                     </div>
                 </SheetHeader>
 
@@ -248,27 +280,27 @@ export function AIPreview() {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 bg-[#121212] border-t border-[#1F1F1F]">
+                <div className="p-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
                     <div className="flex gap-2">
                         <Input
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder="Mande uma mensagem..."
-                            className="bg-[#0A0A0A] border-[#2a2a2a] text-white rounded-full focus:ring-amber-500/50"
+                            className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-amber-500/30 h-10 transition-all placeholder:text-gray-600"
                         />
                         <Button
                             onClick={handleSend}
                             disabled={loading || !input.trim()}
                             size="icon"
-                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-full w-10 h-10 shrink-0 cursor-pointer"
+                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl w-10 h-10 shrink-0 cursor-pointer shadow-lg shadow-amber-900/30 transition-transform active:scale-95"
                         >
                             <Send className="w-4 h-4" />
                         </Button>
                     </div>
-                    <div className="mt-2 flex justify-center">
-                        <Button variant="ghost" size="sm" onClick={handleReset} className="text-xs text-gray-600 h-6 hover:text-gray-400">
-                            <RefreshCw className="w-3 h-3 mr-1" /> Reiniciar Conversa
+                    <div className="mt-3 flex justify-center">
+                        <Button variant="ghost" size="sm" onClick={handleReset} className="text-[10px] text-gray-500 h-6 hover:text-amber-500/80 hover:bg-amber-500/5 rounded-full px-3 uppercase tracking-tighter transition-colors">
+                            <RefreshCw className="w-3 h-3 mr-1.5 opacity-50" /> Reiniciar Conversa
                         </Button>
                     </div>
                 </div>

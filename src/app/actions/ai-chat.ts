@@ -24,21 +24,41 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
             return { error: "Webhook n8n não configurado no Admin." };
         }
 
+        // 0. Garantir que o Lead existe com um nome bonito para os logs
+        const leadId = chatId || crypto.randomUUID();
+        const now = new Date();
+        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        await prisma.lead.upsert({
+            where: { id: leadId },
+            create: {
+                id: leadId,
+                whatsapp: `preview_${profile.tenantId}`,
+                name: `Chat IA - ${formattedDate}`,
+                pushName: `Simulado por ${profile.email}`, // Usamos pushName para guardar a origem internamente
+                tenantId: profile.tenantId,
+                instanceName: `preview_${profile.tenantId}`
+            },
+            update: {
+                updatedAt: new Date()
+            }
+        });
+
         // 1. Buscar Contexto na Base de Conhecimento
         const contextResults = await searchKnowledgeBase(message, 3);
         const contextText = contextResults.map(r => r.content).join("\n\n---\n\n");
 
         // 2. Chamada para o n8n
-        // Async Pattern: Fire and forget (or await 200 OK)
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 message,
-                chatId, // Send conversation session ID
+                chatId: leadId, // Send conversation session ID
                 datetime: new Date().toISOString(),
                 context: contextText, // Send retrieved info
                 tenantId: profile.tenantId,
+                agentName: (profile.tenant as any).assistantName || (profile.tenant as any).configs?.assistantName || (profile.tenant as any).configs?.agentName || "Secretária",
                 preview: true,
                 chatApp: true,
                 message_type: "extendedTextMessage",
@@ -64,12 +84,20 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
 
 export async function sendPublicAIPreviewMessage(message: string, token: string, chatId?: string) {
     try {
-        // 1. Validate Token (Simple Base64 decode of tenantId)
+        // 1. Validate Token (Base64 decode of JSON {tenantId, chatId})
         let tenantId = "";
+        let providedChatId = "";
         try {
-            tenantId = atob(token);
+            const decoded = JSON.parse(atob(token));
+            tenantId = decoded.tenantId;
+            providedChatId = decoded.chatId;
         } catch (e) {
-            return { error: "Link inválido ou corrompido." };
+            // Fallback for old tokens (just tenantId)
+            try {
+                tenantId = atob(token);
+            } catch (e2) {
+                return { error: "Link inválido ou corrompido." };
+            }
         }
 
         if (!tenantId) return { error: "Link inválido." };
@@ -120,21 +148,41 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
             // Non-blocking, continue without context
         }
 
+        // 0. Garantir que o Lead existe para o link público
+        const leadId = chatId || providedChatId || crypto.randomUUID();
+        const now = new Date();
+        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        await prisma.lead.upsert({
+            where: { id: leadId },
+            create: {
+                id: leadId,
+                whatsapp: `public_${tenantId.substring(0, 8)}`,
+                name: `Chat IA - ${formattedDate}`,
+                pushName: "Acesso via Link",
+                tenantId: tenantId,
+                instanceName: `preview_${tenantId}`
+            },
+            update: {
+                updatedAt: new Date()
+            }
+        });
+
         // 5. Call N8N
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 message,
-                chatId,
+                chatId: leadId,
                 datetime: new Date().toISOString(),
                 context: contextText,
                 tenantId: tenantId,
+                agentName: (tenant as any).assistantName || (tenant as any).configs?.assistantName || (tenant as any).configs?.agentName || "Secretária",
                 preview: true,
                 chatApp: true,
-                publicLink: true,
                 message_type: "extendedTextMessage",
-                instanceName: `public_preview_${tenantId}`,
+                instanceName: `preview_${tenantId}`,
                 messageId: crypto.randomUUID()
             })
         });
@@ -152,7 +200,7 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
     }
 }
 
-export async function generatePublicChatLink() {
+export async function generatePublicChatLink(chatId?: string) {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -165,10 +213,13 @@ export async function generatePublicChatLink() {
 
         if (!profile || !profile.tenantId) return { error: "Tenant not found" };
 
-        // Generate base64 token
-        const token = btoa(profile.tenantId);
+        // Generate base64 token with JSON context
+        const token = btoa(JSON.stringify({
+            tenantId: profile.tenantId,
+            chatId: chatId
+        }));
 
-        // Return relative path or full URL if env var is set, but relative is safer for now to be constructed on client
+        // Return token
         return { success: true, token };
 
     } catch (e: any) {

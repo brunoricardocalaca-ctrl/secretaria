@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <rect width="512" height="512" rx="80" fill="url(#bg-gradient)"/>
+  
+  <!-- Border -->
+  <rect x="4" y="4" width="504" height="504" rx="76" stroke="rgba(255, 255, 255, 0.1)" stroke-width="8" fill="none"/>
+  
+  <!-- Letter N with gradient -->
+  <text x="256" y="380" font-family="Inter, system-ui, sans-serif" font-size="340" font-weight="900" text-anchor="middle" fill="url(#text-gradient)">N</text>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="512" y2="512">
+      <stop offset="0%" stop-color="#27272a"/>
+      <stop offset="100%" stop-color="#18181b"/>
+    </linearGradient>
+    <linearGradient id="text-gradient" x1="0" y1="0" x2="0" y2="512">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+</svg>

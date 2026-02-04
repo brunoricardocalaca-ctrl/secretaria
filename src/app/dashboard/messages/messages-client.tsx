@@ -16,6 +16,7 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
     const [loadingChats, setLoadingChats] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
+    const [activeTab, setActiveTab] = useState<'whatsapp' | 'test'>('whatsapp');
     const [editingName, setEditingName] = useState(false);
     const [tempName, setTempName] = useState("");
     const [uploading, setUploading] = useState(false);
@@ -151,6 +152,26 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                 <RefreshCw className={cn("w-4 h-4", loadingChats && "animate-spin")} />
                             </Button>
                         </div>
+                        <div className="flex p-1 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]">
+                            <button
+                                onClick={() => setActiveTab('whatsapp')}
+                                className={cn(
+                                    "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
+                                    activeTab === 'whatsapp' ? "bg-purple-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"
+                                )}
+                            >
+                                <MessageSquare className="w-3 h-3" /> Mensagens
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('test')}
+                                className={cn(
+                                    "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
+                                    activeTab === 'test' ? "bg-amber-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"
+                                )}
+                            >
+                                <Sparkles className="w-3 h-3" /> Testes IA
+                            </button>
+                        </div>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                             <Input
@@ -167,40 +188,65 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                 <Loader2 className="w-6 h-6 animate-spin" />
                                 <span className="text-xs">Carregando conversas...</span>
                             </div>
-                        ) : chats.length === 0 ? (
-                            <div className="p-4 text-center text-gray-500 text-sm">
-                                Nenhuma conversa encontrada.
+                        ) : chats.filter(c => activeTab === 'test' ? c.isTest : !c.isTest).length === 0 ? (
+                            <div className="p-8 text-center space-y-3">
+                                <div className="w-12 h-12 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto border border-[#2a2a2a] opacity-50">
+                                    {activeTab === 'whatsapp' ? <MessageSquare className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {activeTab === 'whatsapp' ? "Nenhuma mensagem de WhatsApp ainda." : "Nenhum chat de teste gerado."}
+                                </p>
                             </div>
                         ) : (
-                            chats.map(chat => (
-                                <div
-                                    key={chat.id}
-                                    onClick={() => setSelectedChat(chat.id)}
-                                    className={cn(
-                                        "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all hover:bg-[#1a1a1a] group",
-                                        selectedChat === chat.id ? "bg-[#1a1a1a] border border-[#2a2a2a]" : "border border-transparent"
-                                    )}
-                                >
-                                    <div className="relative">
-                                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs", getAvatarColor(chat.name))}>
-                                            {chat.name.substring(0, 2).toUpperCase()}
+                            chats
+                                .filter(chat => activeTab === 'test' ? chat.isTest : !chat.isTest)
+                                .map(chat => (
+                                    <div
+                                        key={chat.id}
+                                        onClick={() => {
+                                            setSelectedChat(chat.id);
+                                            setTempName(chat.name);
+                                            setEditingName(false);
+                                        }}
+                                        className={cn(
+                                            "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all hover:bg-[#1a1a1a] group",
+                                            selectedChat === chat.id ? "bg-[#1a1a1a] border border-[#2a2a2a]" : "border border-transparent"
+                                        )}
+                                    >
+                                        <div className="relative">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs",
+                                                chat.isTest ? "bg-amber-600/20 border border-amber-500/30" : getAvatarColor(chat.name)
+                                            )}>
+                                                {chat.isTest ? <Sparkles className="w-4 h-4 text-amber-500" /> : chat.name.substring(0, 2).toUpperCase()}
+                                            </div>
+                                            <div className={cn(
+                                                "absolute bottom-0 right-0 w-3 h-3 border-2 border-[#1a1a1a] rounded-full",
+                                                chat.isTest ? "bg-amber-500" : "bg-green-500"
+                                            )} />
                                         </div>
-                                        {/* Simulação de online para estética */}
-                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1a1a1a] rounded-full" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center mb-0.5">
-                                            <span className={cn("text-sm font-medium truncate", selectedChat === chat.id ? "text-white" : "text-gray-300")}>
-                                                {chat.name}
-                                            </span>
-                                            <span className="text-[10px] text-gray-500">{chat.time}</span>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-center mb-0.5">
+                                                <span className={cn(
+                                                    "text-sm font-medium truncate",
+                                                    selectedChat === chat.id ? "text-white" : "text-gray-300",
+                                                    chat.isTest && "text-amber-200/90"
+                                                )}>
+                                                    {chat.name}
+                                                </span>
+                                                <span className="text-[10px] text-gray-500">{chat.time}</span>
+                                            </div>
+                                            {chat.isTest && (
+                                                <div className="text-[10px] text-amber-500/70 truncate mb-1">
+                                                    {chat.displayPhone}
+                                                </div>
+                                            )}
+                                            <p className="text-xs text-gray-500 truncate group-hover:text-gray-400">
+                                                {chat.lastMessage}
+                                            </p>
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate group-hover:text-gray-400">
-                                            {chat.lastMessage}
-                                        </p>
                                     </div>
-                                </div>
-                            ))
+                                ))
                         )}
                     </div>
                 </div>

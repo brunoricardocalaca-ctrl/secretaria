@@ -35,7 +35,7 @@ export async function getChats(tenantOverrideId?: string) {
         const tenantId = await getEffectiveTenantId(tenantOverrideId);
 
         // Busca leads do tenant com a última mensagem
-        const leads = await prisma.lead.findMany({
+        let leads = await prisma.lead.findMany({
             where: { tenantId },
             include: {
                 conversations: {
@@ -46,22 +46,64 @@ export async function getChats(tenantOverrideId?: string) {
             orderBy: { updatedAt: 'desc' }
         });
 
+        // MIGRATION: Se encontrar nomes com UUID ou "Teste Legado" / "Teste:", limpa para "Chat IA - DD/MM HH:mm"
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; // Corrigido regex de UUID
+        const needsMigration = leads.filter(l =>
+            uuidRegex.test(l.name || "") ||
+            l.name === "Teste: Legado" ||
+            l.name?.startsWith("Teste:") ||
+            l.name === "Visitante Nexus"
+        );
+
+        if (needsMigration.length > 0) {
+            console.log(`[MIGRATION] Encontramos ${needsMigration.length} chats para ajustar nome. Migrando...`);
+            await Promise.all(needsMigration.map(l => {
+                const now = l.createdAt; // Usamos a data de criação do lead para o nome
+                const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                return prisma.lead.update({
+                    where: { id: l.id },
+                    data: {
+                        name: `Chat IA - ${formattedDate}`,
+                        instanceName: l.instanceName || "preview_migration",
+                        pushName: l.pushName || (l.instanceName?.includes('preview') ? "Simulação de Teste" : l.pushName)
+                    }
+                });
+            }));
+            // Recarrega lista pós-migração
+            leads = await prisma.lead.findMany({
+                where: { tenantId },
+                include: {
+                    conversations: {
+                        orderBy: { createdAt: 'desc' },
+                        take: 1
+                    }
+                },
+                orderBy: { updatedAt: 'desc' }
+            });
+        }
+
         return {
             success: true,
-            chats: leads.map(lead => ({
-                id: lead.id,
-                name: lead.pushName || lead.name || lead.whatsapp.replace('@s.whatsapp.net', ''),
-                pushName: lead.pushName,
-                displayPhone: lead.whatsapp.replace('@s.whatsapp.net', ''),
-                lastMessage: lead.conversations[0]?.content || "Sem mensagens",
-                time: lead.conversations[0]?.createdAt
-                    ? new Date(lead.conversations[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : "",
-                unread: 0,
-                whatsapp: lead.whatsapp,
-                instanceName: lead.instanceName,
-                aiPaused: lead.aiPaused
-            }))
+            chats: leads.map(lead => {
+                const isTest = lead.instanceName?.startsWith('preview_') || false;
+                return {
+                    id: lead.id,
+                    name: lead.pushName || lead.name || lead.whatsapp.replace('@s.whatsapp.net', ''),
+                    pushName: lead.pushName,
+                    // Para chats de teste, mostramos a origem no lugar do telefone para ajudar na identificação
+                    displayPhone: isTest ? (lead.pushName || "Teste IA") : lead.whatsapp.replace('@s.whatsapp.net', ''),
+                    lastMessage: lead.conversations[0]?.content || "Sem mensagens",
+                    time: lead.conversations[0]?.createdAt
+                        ? new Date(lead.conversations[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : "",
+                    unread: 0,
+                    whatsapp: lead.whatsapp,
+                    instanceName: lead.instanceName,
+                    aiPaused: lead.aiPaused,
+                    isTest
+                }
+            })
         };
     } catch (e: any) {
         console.error("Error fetching chats:", e);

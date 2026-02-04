@@ -13,6 +13,8 @@ export async function updateTenantAction(formData: FormData) {
     const n8nWebhookUrl = formData.get("n8nWebhookUrl") as string;
     const planPrice = formData.get("planPrice") as string;
     const nextBillingDate = formData.get("nextBillingDate") as string;
+    const assistantName = formData.get("assistantName") as string;
+    const isAiActive = formData.get("isAiActive") === "true";
 
     if (!tenantId) return { error: "Tenant ID required" };
 
@@ -23,20 +25,31 @@ export async function updateTenantAction(formData: FormData) {
         });
 
         const currentConfigs = (currentTenant?.configs as any) || {};
+        const newConfigs = {
+            ...currentConfigs,
+            n8nWebhookUrl: n8nWebhookUrl || undefined
+        };
 
-        await prisma.tenant.update({
-            where: { id: tenantId },
-            data: {
-                name,
-                planStatus,
-                planPrice: planPrice ? parseFloat(planPrice) : undefined,
-                nextBillingDate: nextBillingDate ? new Date(nextBillingDate) : undefined,
-                configs: {
-                    ...currentConfigs,
-                    n8nWebhookUrl: n8nWebhookUrl || undefined
-                }
-            }
-        });
+        // Using Raw SQL to bypass stale Prisma Client cache in dev server
+        await prisma.$executeRawUnsafe(
+            `UPDATE tenants SET 
+                "name" = $1, 
+                "planStatus" = $2, 
+                "assistantName" = $3, 
+                "isAiActive" = $4, 
+                "planPrice" = $5, 
+                "nextBillingDate" = $6, 
+                "configs" = $7 
+             WHERE "id" = $8`,
+            name,
+            planStatus,
+            assistantName,
+            isAiActive,
+            planPrice ? parseFloat(planPrice) : undefined,
+            nextBillingDate ? new Date(nextBillingDate) : undefined,
+            JSON.stringify(newConfigs),
+            tenantId
+        );
 
         revalidatePath(`/admin/tenants/${tenantId}`);
         revalidatePath("/admin/tenants");
@@ -434,10 +447,10 @@ export async function createTenantManualAction(formData: FormData) {
                 planPrice: planPrice ? parseFloat(planPrice) : 297.00,
                 nextBillingDate: billingDate,
                 planStatus: "active",
-                configs: {
-                    agentName: "Lumina Agent",
-                }
-            }
+                assistantName: "Lumina",
+                isAiActive: true,
+                configs: {}
+            } as any
         });
 
         // 2. Create Preview Instance

@@ -22,13 +22,12 @@ model Tenant {
   setupCompleted    Boolean               @default(false)
   setupStep         Int                   @default(1)
   agendaEnabled     Boolean               @default(false)
-  
-  // SaaS Management Fields
+  nextBillingDate   DateTime?
   ownerEmail        String?
   ownerPhone        String?
   planPrice         Decimal?              @default(297.00) @db.Decimal(10, 2)
-  nextBillingDate   DateTime?
-
+  isAiActive        Boolean               @default(true)
+  assistantName     String?               @default("Lumina")
   appointments      Appointment[]
   availabilities    Availability[]
   bankAccounts      BankAccount[]
@@ -119,17 +118,18 @@ model Lead {
   id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   whatsapp      String
   name          String?
-  pushName      String?
   tenantId      String
   createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  updatedAt     DateTime          @default(now()) @updatedAt
   instanceName  String?
+  pushName      String?
+  aiPaused      Boolean           @default(false)
+  serviceLead   String?
   appointments  Appointment[]
   conversations Conversation[]
   instance      WhatsappInstance? @relation(fields: [instanceName], references: [internalName], onDelete: Cascade)
   tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   transactions  Transaction[]
-  aiPaused      Boolean           @default(false)
 
   @@unique([whatsapp, instanceName])
   @@map("leads")
@@ -292,7 +292,7 @@ model Transaction {
 model SystemConfig {
   id        String   @id @default(uuid())
   key       String   @unique
-  value     String   @db.Text
+  value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
