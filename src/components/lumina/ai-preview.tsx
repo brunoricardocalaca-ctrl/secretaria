@@ -2,11 +2,11 @@
 
 
 import { useState, useRef, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalLink } from "lucide-react";
+import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalLink, X } from "lucide-react";
 import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
 import { getMessages } from "@/app/actions/messages";
 import { cn } from "@/lib/utils";
@@ -278,7 +278,7 @@ export function AIPreview() {
                 </Button>
             </SheetTrigger>
             <SheetContent className="bg-[#0A0A0A] border-l border-[#1F1F1F] text-white w-full sm:max-w-md p-0 flex flex-col h-full z-[100]">
-                <SheetHeader className="p-4 pr-16 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+                <SheetHeader className="p-4 border-b border-white/5 bg-black/40 backdrop-blur-xl">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-900/20 shrink-0">
@@ -331,6 +331,20 @@ export function AIPreview() {
                                         <Share2 className="w-4 h-4" />
                                     )}
                                 </Button>
+
+                                <div className="w-px h-4 bg-white/10 mx-0.5" />
+
+                                {/* Close Button */}
+                                <SheetClose asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all rounded-md"
+                                        title="Fechar"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                </SheetClose>
                             </div>
                         </div>
                     </div>
