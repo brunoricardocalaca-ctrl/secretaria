@@ -252,17 +252,17 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                         </>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="flex items-center gap-1.5 mt-0.5" data-v="v2">
                                     <span className={cn(
                                         "w-1.5 h-1.5 rounded-full transition-all duration-500",
-                                        attendant?.isOnline ? "bg-green-500" : "bg-red-500",
-                                        attendant?.isOnline && attendant?.isWhatsappConnected && "animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+                                        attendant?.isOnline ? "bg-[#10b981]" : "bg-[#ef4444]",
+                                        attendant?.isOnline && attendant?.isWhatsappConnected && "animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.7)]"
                                     )} />
                                     <p className={cn(
                                         "text-[10px] font-medium uppercase tracking-wider transition-colors duration-500",
-                                        attendant?.isOnline ? "text-green-500" : "text-red-500"
+                                        attendant?.isOnline ? "text-[#10b981]" : "text-[#ef4444]"
                                     )}>
-                                        {attendant?.isOnline ? "Online" : "Offline"}
+                                        {attendant?.isOnline ? "[ONLINE]" : "[OFFLINE]"}
                                     </p>
                                 </div>
                             </div>
@@ -276,8 +276,8 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                 className={cn(
                                     "p-2 rounded-lg border transition-all duration-500 relative z-20",
                                     attendant?.isOnline
-                                        ? "bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20"
-                                        : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
+                                        ? "bg-[#10b981]/10 border-[#10b981]/30 text-[#10b981] hover:bg-[#10b981]/20"
+                                        : "bg-[#ef4444]/10 border-[#ef4444]/30 text-[#ef4444] hover:bg-[#ef4444]/20"
                                 )}
                             >
                                 {attendant?.isOnline ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
