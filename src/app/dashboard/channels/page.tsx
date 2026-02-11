@@ -14,7 +14,7 @@ export default async function ChannelsPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-white">Canais de Comunicação</h1>
-                        <p className="text-gray-400">Gerencie suas conexões de WhatsApp</p>
+                        <p className="text-gray-400">Conecte e gerencie seus números de WhatsApp</p>
                     </div>
                 </div>
             </div>

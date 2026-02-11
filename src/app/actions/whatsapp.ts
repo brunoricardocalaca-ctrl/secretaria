@@ -97,7 +97,7 @@ export async function getConnectQR(internalName: string) {
         const inst = await prisma.whatsappInstance.findFirst({
             where: { internalName, tenantId }
         });
-        if (!inst) throw new Error("Instance not found or unauthorized");
+        if (!inst) throw new Error("Conexão não encontrada ou não autorizada");
 
         const res = await client.connectInstance(internalName);
         return res;
@@ -117,7 +117,7 @@ export async function deleteInstanceAction(rawInternalName: string) {
             where: { internalName, tenantId }
         });
         console.log(`[Action] Instance found in DB:`, inst);
-        if (!inst) throw new Error("Instance not found or unauthorized");
+        if (!inst) throw new Error("Conexão não encontrada ou não autorizada");
 
         console.log(`[Action] Deleting instance: ${internalName}`);
 
@@ -147,7 +147,7 @@ export async function deleteInstanceAction(rawInternalName: string) {
         return { success: true };
     } catch (e: any) {
         console.error(`[Action] Delete Error:`, e);
-        return { error: e.message || "Falha ao excluir instância" };
+        return { error: e.message || "Falha ao remover WhatsApp" };
     }
 }
 
@@ -158,7 +158,7 @@ export async function logoutInstanceAction(rawInternalName: string) {
         const inst = await prisma.whatsappInstance.findFirst({
             where: { internalName, tenantId }
         });
-        if (!inst) throw new Error("Instance not found or unauthorized");
+        if (!inst) throw new Error("Conexão não encontrada ou não autorizada");
 
         console.log(`[Action] Logging out instance: ${internalName}`);
         try {
@@ -182,9 +182,14 @@ export async function logoutInstanceAction(rawInternalName: string) {
 export async function listInstances() {
     try {
         const { tenantId } = await getTenantContext();
-        // Fetch from DB
+        // Fetch from DB - Filter out preview instances
         const dbInstances = await prisma.whatsappInstance.findMany({
-            where: { tenantId },
+            where: {
+                tenantId,
+                NOT: {
+                    internalName: { startsWith: 'preview_' }
+                }
+            },
             orderBy: { createdAt: "desc" }
         });
 

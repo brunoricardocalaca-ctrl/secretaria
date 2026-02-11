@@ -29,7 +29,7 @@ export const menuItems = [
         items: [
             { name: "Início", icon: LayoutDashboard, href: "/dashboard" },
             { name: "Mensagens", icon: MessageSquare, href: "/dashboard/messages" },
-            { name: "Conectar IA", icon: Radio, href: "/dashboard/channels" },
+            { name: "Canais WhatsApp", icon: Radio, href: "/dashboard/channels" },
         ],
     },
     {

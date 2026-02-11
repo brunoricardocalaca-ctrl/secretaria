@@ -47,18 +47,32 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
             });
         }
 
+        const friendlyName = `Simulação de Atendimento - ${formattedDate}`;
+        const simulationPushName = "Visitante Local";
+
         await prisma.lead.upsert({
             where: { id: leadId },
             create: {
                 id: leadId,
                 whatsapp: `preview_${profile.tenantId}_${leadId}`,
-                name: `Chat IA - ${formattedDate}`,
-                pushName: `Simulado por ${profile.email}`,
+                name: friendlyName,
+                pushName: simulationPushName,
                 tenantId: profile.tenantId,
-                instanceName: previewInstanceName // Now safe to use fixed instance
+                instanceName: previewInstanceName
             },
             update: {
                 updatedAt: new Date(),
+                instanceName: previewInstanceName
+            }
+        });
+
+        // 0.1 Gravar a mensagem do usuário no histórico para aparecer na aba Mensagens
+        await prisma.conversation.create({
+            data: {
+                role: 'user',
+                content: message,
+                leadId: leadId,
+                tenantId: profile.tenantId,
                 instanceName: previewInstanceName
             }
         });
@@ -101,7 +115,7 @@ export async function sendAIPreviewMessage(message: string, chatId?: string) {
                             fromMe: false,
                             id: crypto.randomUUID()
                         },
-                        pushName: `Simulado por ${profile.email}`,
+                        pushName: simulationPushName,
                         message: {
                             conversation: message,
                             extendedTextMessage: { text: message }
@@ -217,18 +231,32 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
             });
         }
 
+        const friendlyName = `Simulação de Atendimento - ${formattedDate}`;
+        const publicSimulationPushName = "Visitante (Link)";
+
         await prisma.lead.upsert({
             where: { id: leadId },
             create: {
                 id: leadId,
                 whatsapp: `public_${tenantId.substring(0, 8)}_${leadId}`,
-                name: `Chat IA - ${formattedDate}`,
-                pushName: "Acesso via Link",
+                name: friendlyName,
+                pushName: publicSimulationPushName,
                 tenantId: tenantId,
                 instanceName: previewInstanceName
             },
             update: {
                 updatedAt: new Date(),
+                instanceName: previewInstanceName
+            }
+        });
+
+        // 4.1 Gravar a mensagem do usuário no histórico
+        await prisma.conversation.create({
+            data: {
+                role: 'user',
+                content: message,
+                leadId: leadId,
+                tenantId: tenantId,
                 instanceName: previewInstanceName
             }
         });
@@ -267,7 +295,7 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
                             fromMe: false,
                             id: crypto.randomUUID()
                         },
-                        pushName: "Acesso via Link",
+                        pushName: publicSimulationPushName,
                         message: {
                             conversation: message,
                             extendedTextMessage: { text: message }

@@ -8,15 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalLink } from "lucide-react";
 import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
+import { getMessages } from "@/app/actions/messages";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { getAssistantStatus } from "@/app/actions/profile";
 
 export function AIPreview() {
-    const [chatId, setChatId] = useState(() => crypto.randomUUID());
-    const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string, timestamp: Date }[]>([
-        { role: 'ai', text: "Olá! Sou sua assistente virtual. Como posso ajudar com os agendamentos hoje?", timestamp: new Date() }
-    ]);
+    const [chatId, setChatId] = useState<string>("");
+    const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string, timestamp: Date }[]>([]);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [generatingLink, setGeneratingLink] = useState(false);
@@ -36,14 +36,43 @@ export function AIPreview() {
     ];
 
     useEffect(() => {
-        async function fetchAssistant() {
-            const res = await getAssistantStatus();
-            if (res.success && res.name) {
-                setAssistantName(res.name);
-                setMessages([{ role: 'ai', text: `Olá! Sou ${res.name}, sua assistente virtual. Como posso ajudar com os agendamentos hoje?`, timestamp: new Date() }]);
-            }
+        // 1. Load or Generate ChatId
+        let storedId = typeof window !== 'undefined' ? localStorage.getItem("ai-preview-chat-id") : null;
+        if (!storedId) {
+            storedId = crypto.randomUUID();
+            if (typeof window !== 'undefined') localStorage.setItem("ai-preview-chat-id", storedId);
         }
-        fetchAssistant();
+        setChatId(storedId);
+
+        // 2. Fetch Assistant Name and History
+        async function initChat(id: string) {
+            const statusRes = await getAssistantStatus();
+            const currentAssistantName = statusRes.success && statusRes.name ? statusRes.name : "Lumina";
+            setAssistantName(currentAssistantName);
+
+            const msgRes = await getMessages(id);
+            if (msgRes.success && msgRes.messages && msgRes.messages.length > 0) {
+                // Map database messages to UI format
+                const mapped = msgRes.messages
+                    .filter(m => m.sender !== 'system')
+                    .map(m => ({
+                        role: (m.sender === 'assistant' ? 'ai' : 'user') as 'ai' | 'user',
+                        text: m.text,
+                        timestamp: new Date(m.createdAt!)
+                    }));
+                setMessages(mapped);
+            } else {
+                // Default welcome message
+                setMessages([{
+                    role: 'ai' as const,
+                    text: `Olá! Sou ${currentAssistantName}, sua assistente virtual. Como posso ajudar com os agendamentos hoje?`,
+                    timestamp: new Date()
+                }]);
+            }
+            setHistoryLoaded(true);
+        }
+
+        if (storedId) initChat(storedId);
     }, []);
 
     useEffect(() => {
@@ -53,17 +82,22 @@ export function AIPreview() {
     }, [messages]);
 
     function handleReset() {
+        if (!confirm("Deseja realmente reiniciar a conversa? O histórico atual será perdido.")) return;
+
         // Cancel any pending request
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             abortControllerRef.current = null;
         }
 
+        const newId = crypto.randomUUID();
+        localStorage.setItem("ai-preview-chat-id", newId);
+
         setLoading(false);
         setMessages([
-            { role: 'ai', text: `Olá! Sou ${assistantName}, sua assistente virtual. Como posso ajudar com os agendamentos hoje?`, timestamp: new Date() }
+            { role: 'ai' as const, text: `Olá! Sou ${assistantName}, sua assistente virtual. Como posso ajudar com os agendamentos hoje?`, timestamp: new Date() }
         ]);
-        setChatId(crypto.randomUUID());
+        setChatId(newId);
         messageReceivedRef.current = false;
     }
 
@@ -303,44 +337,53 @@ export function AIPreview() {
 
                 {/* Chat Area */}
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0A0A0A]">
-                    {messages.map((msg, idx) => (
-                        <div key={idx} className={cn(
-                            "flex flex-col max-w-[85%]", // Changed to flex-col to align Time
-                            msg.role === 'user' ? "ml-auto items-end" : "items-start"
-                        )}>
-                            <div className={cn(
-                                "flex items-start gap-3",
-                                msg.role === 'user' ? "flex-row-reverse" : ""
-                            )}>
-                                <div className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                                    msg.role === 'user' ? "bg-[#2a2a2a]" : "bg-amber-500/20"
-                                )}>
-                                    {msg.role === 'user' ? <User className="w-4 h-4 text-gray-400" /> : <Bot className="w-4 h-4 text-amber-400" />}
-                                </div>
-                                <div className={cn(
-                                    "p-3 rounded-2xl text-sm leading-relaxed",
-                                    msg.role === 'user'
-                                        ? "bg-[#2a2a2a] text-gray-200 rounded-tr-none"
-                                        : "bg-amber-500/10 text-amber-100 border border-amber-500/20 rounded-tl-none whitespace-pre-wrap"
-                                )}>
-                                    {msg.text}
-                                </div>
-                            </div>
-                            {/* Timestamp */}
-                            <span className={cn(
-                                "text-[10px] text-gray-600 mt-1",
-                                msg.role === 'user' ? "mr-12" : "ml-12"
-                            )}>
-                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                    {!historyLoaded ? (
+                        <div className="flex flex-col items-center justify-center h-full text-amber-500/50 gap-2">
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                            <span className="text-xs uppercase tracking-widest font-bold">Carregando Histórico...</span>
                         </div>
-                    ))}
-                    {loading && (
-                        <div className="flex items-center gap-2 text-gray-500 text-xs ml-12 animate-pulse">
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            {loadingLabel}
-                        </div>
+                    ) : (
+                        <>
+                            {messages.map((msg, idx) => (
+                                <div key={idx} className={cn(
+                                    "flex flex-col max-w-[85%]",
+                                    msg.role === 'user' ? "ml-auto items-end" : "items-start"
+                                )}>
+                                    <div className={cn(
+                                        "flex items-start gap-3",
+                                        msg.role === 'user' ? "flex-row-reverse" : ""
+                                    )}>
+                                        <div className={cn(
+                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                                            msg.role === 'user' ? "bg-[#2a2a2a]" : "bg-amber-500/20"
+                                        )}>
+                                            {msg.role === 'user' ? <User className="w-4 h-4 text-gray-400" /> : <Bot className="w-4 h-4 text-amber-400" />}
+                                        </div>
+                                        <div className={cn(
+                                            "p-3 rounded-2xl text-sm leading-relaxed",
+                                            msg.role === 'user'
+                                                ? "bg-[#2a2a2a] text-gray-200 rounded-tr-none"
+                                                : "bg-amber-500/10 text-amber-100 border border-amber-500/20 rounded-tl-none whitespace-pre-wrap"
+                                        )}>
+                                            {msg.text}
+                                        </div>
+                                    </div>
+                                    {/* Timestamp */}
+                                    <span className={cn(
+                                        "text-[10px] text-gray-600 mt-1",
+                                        msg.role === 'user' ? "mr-12" : "ml-12"
+                                    )}>
+                                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            ))}
+                            {loading && (
+                                <div className="flex items-center gap-2 text-gray-500 text-xs ml-12 animate-pulse">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    {loadingLabel}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 

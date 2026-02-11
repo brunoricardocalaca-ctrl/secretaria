@@ -28,10 +28,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing chatId or message" }, { status: 400 });
         }
 
-        // 1. PERSIST TO DATABASE (Polling Fallback)
+        // 1. PERSIST TO DATABASE (Polling Fallback & Conversation History)
         console.log("Writing to database...");
         try {
-            const dbResult = await prisma.systemConfig.upsert({
+            // A. Polling Fallback
+            await prisma.systemConfig.upsert({
                 where: { key: `chat_response_${cleanChatId}` },
                 create: {
                     key: `chat_response_${cleanChatId}`,
@@ -42,7 +43,32 @@ export async function POST(request: NextRequest) {
                     updatedAt: new Date()
                 }
             });
-            console.log("Database write successful:", dbResult.id);
+
+            // B. Permanent Conversation History (Only if it's a known lead/simulated chat)
+            const lead = await prisma.lead.findUnique({
+                where: { id: cleanChatId }
+            });
+
+            if (lead) {
+                console.log(`[Response API] Persisting message to lead ${lead.id} history`);
+                await prisma.conversation.create({
+                    data: {
+                        content: cleanContent,
+                        role: 'assistant',
+                        leadId: lead.id,
+                        tenantId: lead.tenantId,
+                        instanceName: lead.instanceName
+                    }
+                });
+
+                // Update lead's updatedAt to bubble up in chats list
+                await prisma.lead.update({
+                    where: { id: lead.id },
+                    data: { updatedAt: new Date() }
+                });
+            }
+
+            console.log("Database writes successful");
         } catch (dbError) {
             console.error("Database write failed:", dbError);
         }

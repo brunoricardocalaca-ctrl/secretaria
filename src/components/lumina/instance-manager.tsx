@@ -146,21 +146,21 @@ export function InstanceManager({ initialInstances }: { initialInstances: any[] 
                 <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-[#2a2a2a]">
                     <div className="flex items-center gap-2">
                         <Smartphone className="w-5 h-5 text-green-500" />
-                        <CardTitle className="text-lg font-medium text-white">Instâncias do WhatsApp</CardTitle>
+                        <CardTitle className="text-lg font-medium text-white">Conexões de WhatsApp</CardTitle>
                     </div>
                     <Dialog open={isCreationDialogOpen} onOpenChange={setIsCreationDialogOpen}>
                         <DialogTrigger asChild>
                             <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold transition-all hover:scale-[1.02]">
-                                <Plus className="w-4 h-4 mr-2" /> Nova Instância
+                                <Plus className="w-4 h-4 mr-2" /> Conectar WhatsApp
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="bg-[#1c1c1c] border-[#2a2a2a] text-white">
                             <DialogHeader>
-                                <DialogTitle>Criar Nova Conexão</DialogTitle>
+                                <DialogTitle>Conectar Novo WhatsApp</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">Nome da Instância (Rótulo)</label>
+                                    <label className="text-sm font-medium text-gray-400">Nome da Conexão (Rótulo)</label>
                                     <Input
                                         placeholder="Ex: WhatsApp Vendas"
                                         value={newInstanceName}
@@ -256,7 +256,7 @@ export function InstanceManager({ initialInstances }: { initialInstances: any[] 
                         <div className="p-8 flex flex-col items-center text-center space-y-4">
                             <CheckCircle2 className="w-16 h-16 text-green-500" />
                             <h2 className="text-2xl font-bold">Conectado!</h2>
-                            <p className="text-gray-400 text-sm">Sua instância <span className="text-white font-bold">{selectedDisplayName}</span> está ativa.</p>
+                            <p className="text-gray-400 text-sm">Seu WhatsApp <span className="text-white font-bold">{selectedDisplayName}</span> está ativo.</p>
                             <Button onClick={() => setSelectedInternalName(null)} className="w-full bg-green-600 h-11 font-bold">Fechar</Button>
                         </div>
                     ) : !isAware ? (
@@ -267,7 +267,7 @@ export function InstanceManager({ initialInstances }: { initialInstances: any[] 
                                     <ShieldCheck className="w-7 h-7 text-orange-500" />
                                     Termo de Responsabilidade
                                 </DialogTitle>
-                                <p className="text-sm text-gray-400 mt-2">Instância: <span className="text-white font-semibold">{selectedDisplayName}</span></p>
+                                <p className="text-sm text-gray-400 mt-2">WhatsApp: <span className="text-white font-semibold">{selectedDisplayName}</span></p>
                             </DialogHeader>
 
                             <div className="space-y-6">
@@ -280,7 +280,7 @@ export function InstanceManager({ initialInstances }: { initialInstances: any[] 
                                     />
                                     <label htmlFor="aware-checkbox" className="text-base text-gray-300 leading-relaxed cursor-pointer">
                                         <span className="text-orange-400 font-bold text-lg">Estou ciente</span> de que esta conexão vinculará meu número de WhatsApp a esta automação.
-                                        Apenas eu sou responsável pelo uso e conteúdo enviado através desta instância.
+                                        Apenas eu sou responsável pelo uso e conteúdo enviado através desta conexão.
                                     </label>
                                 </div>
 
@@ -408,11 +408,11 @@ export function InstanceManager({ initialInstances }: { initialInstances: any[] 
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <p className="text-gray-300">
-                            Deseja realmente <span className="font-bold text-white">EXCLUIR permanentemente</span> a instância{' '}
+                            Deseja realmente <span className="font-bold text-white">REMOVER permanentemente</span> a conexão{' '}
                             <span className="font-bold text-red-400">"{instanceToDelete?.displayName}"</span>?
                         </p>
                         <p className="text-sm text-gray-500">
-                            Esta ação não pode ser desfeita e a instância será removida da VPS.
+                            Esta ação não pode ser desfeita e a conexão será desconectada do sistema.
                         </p>
                         <div className="flex gap-3 pt-4">
                             <Button

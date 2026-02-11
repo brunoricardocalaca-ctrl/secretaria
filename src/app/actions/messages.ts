@@ -64,9 +64,9 @@ export async function getChats(tenantOverrideId?: string) {
                 return prisma.lead.update({
                     where: { id: l.id },
                     data: {
-                        name: `Chat IA - ${formattedDate}`,
+                        name: `Simulação de Atendimento - ${formattedDate}`,
                         instanceName: l.instanceName || "preview_migration",
-                        pushName: l.pushName || (l.instanceName?.includes('preview') ? "Simulação de Teste" : l.pushName)
+                        pushName: l.pushName || "Visitante Local"
                     }
                 });
             }));
@@ -89,9 +89,10 @@ export async function getChats(tenantOverrideId?: string) {
                 const isTest = lead.instanceName?.startsWith('preview_') || false;
                 return {
                     id: lead.id,
-                    name: lead.pushName || lead.name || lead.whatsapp.replace('@s.whatsapp.net', ''),
+                    // Para testes, priorizamos o nome da simulação (Ex: Simulação de Atendimento - ...)
+                    name: isTest ? (lead.name || lead.pushName || "Simulação") : (lead.pushName || lead.name || lead.whatsapp.replace('@s.whatsapp.net', '')),
                     pushName: lead.pushName,
-                    // Para chats de teste, mostramos a origem no lugar do telefone para ajudar na identificação
+                    // Para chats de teste, mostramos a origem (Visitante Local/Link) no lugar do telefone
                     displayPhone: isTest ? (lead.pushName || "Teste IA") : lead.whatsapp.replace('@s.whatsapp.net', ''),
                     lastMessage: lead.conversations[0]?.content || "Sem mensagens",
                     time: lead.conversations[0]?.createdAt
@@ -128,8 +129,9 @@ export async function getMessages(leadId: string, tenantOverrideId?: string) {
             messages: messages.map(m => ({
                 id: m.id,
                 text: m.content,
-                sender: m.role, // 'user', 'assistant', 'human'
-                time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                sender: m.role, // 'user', 'assistant', 'human', 'system'
+                time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                createdAt: m.createdAt.toISOString()
             }))
         };
     } catch (e: any) {
@@ -147,7 +149,7 @@ export async function sendMessageAction(leadId: string, content: string, tenantO
             include: { instance: true }
         });
 
-        if (!lead || !lead.instanceName) throw new Error("Lead ou instância não encontrados");
+        if (!lead || !lead.instanceName) throw new Error("Lead ou conexão não encontrados");
 
         // 1. Enviar via Evolution API
         await evolution.sendText(lead.instanceName, lead.whatsapp, content);
@@ -215,7 +217,7 @@ export async function fetchPushName(leadId: string, tenantOverrideId?: string) {
             where: { id: leadId, tenantId }
         });
 
-        if (!lead || !lead.instanceName) throw new Error("Lead ou instância não encontrados");
+        if (!lead || !lead.instanceName) throw new Error("Lead ou conexão não encontrados");
 
         // Buscar pushName da Evolution API
         const contact = await evolution.getContact(lead.instanceName, lead.whatsapp);
@@ -249,7 +251,7 @@ export async function sendDocument(leadId: string, fileUrl: string, caption?: st
             include: { instance: true }
         });
 
-        if (!lead || !lead.instanceName) throw new Error("Lead ou instância não encontrados");
+        if (!lead || !lead.instanceName) throw new Error("Lead ou conexão não encontrados");
 
         // 1. Enviar via Evolution API
         await evolution.sendMedia(lead.instanceName, lead.whatsapp, fileUrl, caption, fileName);

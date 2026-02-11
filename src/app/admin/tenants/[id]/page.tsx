@@ -128,17 +128,17 @@ export default async function AdminTenantDetailsPage({ params }: { params: Promi
                 <div className="space-y-6">
                     <Card className="bg-[#121212] border-[#1F1F1F] border-l-4 border-l-purple-500">
                         <CardHeader>
-                            <CardTitle className="text-white text-base">Instâncias WhatsApp</CardTitle>
+                            <CardTitle className="text-white text-base">WhatsApp Conectados</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                {tenant.whatsappInstances.map(i => (
+                                {tenant.whatsappInstances.filter(i => !i.internalName.startsWith('preview_')).map(i => (
                                     <div key={i.id} className="text-sm bg-purple-500/10 p-2 rounded text-purple-200 border border-purple-500/20">
                                         {i.internalName} <span className="opacity-50">({i.status})</span>
                                     </div>
                                 ))}
-                                {tenant.whatsappInstances.length === 0 && (
-                                    <p className="text-gray-500 text-sm">Nenhuma instância conectada.</p>
+                                {tenant.whatsappInstances.filter(i => !i.internalName.startsWith('preview_')).length === 0 && (
+                                    <p className="text-gray-500 text-sm">Nenhum WhatsApp conectado.</p>
                                 )}
                             </div>
                         </CardContent>

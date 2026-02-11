@@ -457,7 +457,7 @@ export async function createTenantManualAction(formData: FormData) {
         await prisma.whatsappInstance.create({
             data: {
                 tenantId: tenant.id,
-                name: "Instância de Teste",
+                name: "WhatsApp de Teste",
                 internalName: `preview_${tenant.id}`,
                 status: "connected",
             }

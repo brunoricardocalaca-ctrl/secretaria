@@ -36,7 +36,7 @@ export function SettingsClient({ initialConfigs, initialTenantName }: { initialC
         setSyncLoading(true);
         const res = await syncWebhooksAction();
         if (res.success) {
-            alert(`Sincronização concluída! ${res.count} instâncias atualizadas.`);
+            alert(`Sincronização concluída! ${res.count} conexões atualizadas.`);
         } else {
             alert("Erro na sincronização: " + res.error);
         }
