@@ -254,16 +254,13 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                 </div>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className={cn(
-                                        "w-1.5 h-1.5 rounded-full transition-colors duration-500",
-                                        !attendant?.isOnline && "bg-red-500",
-                                        attendant?.isOnline && !attendant?.isWhatsappConnected && "bg-amber-500",
-                                        attendant?.isOnline && attendant?.isWhatsappConnected && "bg-green-500 animate-pulse"
+                                        "w-1.5 h-1.5 rounded-full transition-all duration-500",
+                                        attendant?.isOnline ? "bg-green-500" : "bg-red-500",
+                                        attendant?.isOnline && attendant?.isWhatsappConnected && "animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.4)]"
                                     )} />
                                     <p className={cn(
                                         "text-[10px] font-medium uppercase tracking-wider transition-colors duration-500",
-                                        !attendant?.isOnline && "text-red-500",
-                                        attendant?.isOnline && !attendant?.isWhatsappConnected && "text-amber-500",
-                                        attendant?.isOnline && attendant?.isWhatsappConnected && "text-green-500"
+                                        attendant?.isOnline ? "text-green-500" : "text-red-500"
                                     )}>
                                         {attendant?.isOnline ? "Online" : "Offline"}
                                     </p>
@@ -278,11 +275,9 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                 title={attendant?.isOnline ? "Desativar Modo Online" : "Ativar Modo Online"}
                                 className={cn(
                                     "p-2 rounded-lg border transition-all duration-500 relative z-20",
-                                    !attendant?.isOnline
-                                        ? "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
-                                        : (attendant?.isWhatsappConnected
-                                            ? "bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20"
-                                            : "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20")
+                                    attendant?.isOnline
+                                        ? "bg-green-500/10 border-green-500/30 text-green-500 hover:bg-green-500/20"
+                                        : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
                                 )}
                             >
                                 {attendant?.isOnline ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
