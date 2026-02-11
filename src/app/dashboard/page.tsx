@@ -30,7 +30,7 @@ export default async function DashboardHome() {
             </div>
 
             {/* AI KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <KPICard
                     title="Mensagens Recebidas"
                     value={stats.totalReceived}
@@ -51,13 +51,6 @@ export default async function DashboardHome() {
                     icon={Users}
                     iconColorClass="bg-emerald-600 shadow-emerald-900/20"
                     footer="Leads únicos atendidos pela IA"
-                />
-                <KPICard
-                    title="Custo Evitado"
-                    value={stats.avoidedCostFormatted}
-                    icon={DollarSign}
-                    iconColorClass="bg-amber-500 shadow-amber-900/20"
-                    footer="Economia estimada (Humano)"
                 />
             </div>
 

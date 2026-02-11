@@ -40,7 +40,7 @@ export const menuItems = [
     {
         category: "GESTÃO",
         items: [
-            { name: "Agenda", icon: CalendarDays, href: "/dashboard/agenda" },
+            { name: "Agenda", icon: CalendarDays, href: "/dashboard/agenda", badge: "Em Breve" },
             { name: "Follow Up", icon: Repeat, href: "#", badge: "Em Breve" },
             { name: "Lembretes", icon: Bell, href: "#", badge: "Em Breve" },
         ],

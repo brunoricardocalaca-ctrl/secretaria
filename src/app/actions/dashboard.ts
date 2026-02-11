@@ -25,7 +25,8 @@ export async function getDashboardStats() {
         const totalReceived = await prisma.conversation.count({
             where: {
                 tenantId,
-                role: 'user'
+                role: 'user',
+                NOT: { instanceName: { startsWith: 'preview_' } }
             }
         });
 
@@ -33,7 +34,8 @@ export async function getDashboardStats() {
         const totalSentByAI = await prisma.conversation.count({
             where: {
                 tenantId,
-                role: 'assistant'
+                role: 'assistant',
+                NOT: { instanceName: { startsWith: 'preview_' } }
             }
         });
 
@@ -43,7 +45,8 @@ export async function getDashboardStats() {
             by: ['leadId'],
             where: {
                 tenantId,
-                role: 'assistant'
+                role: 'assistant',
+                NOT: { instanceName: { startsWith: 'preview_' } }
             }
         });
         const totalLeadsAttended = attendedLeadsCount.length;
