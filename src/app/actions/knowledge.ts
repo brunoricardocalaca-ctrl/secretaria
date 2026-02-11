@@ -212,10 +212,10 @@ export async function syncServicesToKnowledgeBase(providedTenantId?: string, pro
     }
 }
 
-export async function searchKnowledgeBase(query: string, limit: number = 3) {
+export async function searchKnowledgeBase(query: string, limit: number = 3, internalTenantId?: string, internalApiKey?: string) {
     try {
-        const { tenantId } = await getTenantContext();
-        const apiKey = await getSystemConfig("openai_api_key");
+        const tenantId = internalTenantId || (await getTenantContext()).tenantId;
+        const apiKey = internalApiKey || await getSystemConfig("openai_api_key");
 
         if (!apiKey) return [];
 

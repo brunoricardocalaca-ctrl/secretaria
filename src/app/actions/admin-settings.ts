@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { getInternalSystemConfig } from "@/lib/configs";
 
 async function verifySuperAdmin() {
     const supabase = await createClient();
@@ -17,10 +18,7 @@ async function verifySuperAdmin() {
 export async function getSystemConfig(key: string) {
     try {
         await verifySuperAdmin();
-        const config = await prisma.systemConfig.findUnique({
-            where: { key }
-        });
-        return config?.value || "";
+        return await getInternalSystemConfig(key);
     } catch (error) {
         console.error(`Error fetching config ${key}:`, error);
         return "";

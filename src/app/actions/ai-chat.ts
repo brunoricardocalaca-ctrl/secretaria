@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { getSystemConfig } from "./admin-settings";
+import { getInternalSystemConfig } from "@/lib/configs";
 import { searchKnowledgeBase } from "./knowledge";
 
 export async function sendAIPreviewMessage(message: string, chatId?: string) {
@@ -172,7 +173,7 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
         if (!tenant) return { error: "Empresa não encontrada ou link expirado." };
 
         // 3. Get System Configs
-        const webhookUrl = await getSystemConfig("n8n_webhook_url");
+        const webhookUrl = await getInternalSystemConfig("n8n_webhook_url");
         if (!webhookUrl) {
             return { error: "Chat temporariamente indisponível (Erro de configuração)." };
         }
@@ -184,23 +185,9 @@ export async function sendPublicAIPreviewMessage(message: string, token: string,
 
         let contextText = "";
         try {
-            // Reuse search logic but passing tenantId explicitly
-            // We can't use `searchKnowledgeBase` because it calls `getTenantContext` -> `supabase.auth.getUser`.
-            // So we implement a quick search here or refactor.
-            // Refactoring is safer.
-            const apiKey = await getSystemConfig("openai_api_key");
+            const apiKey = await getInternalSystemConfig("openai_api_key");
             if (apiKey) {
-                const { getOpenAIEmbedding } = await import("@/lib/openai");
-                const vector = await getOpenAIEmbedding(message, apiKey);
-                const vectorString = `[${vector.join(",")}]`;
-
-                const results = await prisma.$queryRawUnsafe<any[]>(`
-                    SELECT content FROM documents
-                    WHERE "tenant_id" = $1 AND metadata->>'active' = '1'
-                    ORDER BY (1 - (embedding <=> ${vectorString}::vector)) DESC
-                    LIMIT 3
-                 `, tenantId);
-
+                const results = await searchKnowledgeBase(message, 3, tenantId, apiKey);
                 contextText = results.map(r => r.content).join("\n\n---\n\n");
             }
         } catch (e) {
