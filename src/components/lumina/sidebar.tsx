@@ -10,7 +10,7 @@ import {
     Radio,
     Settings,
     UserCog,
-    Sparkles,
+    LayoutGrid,
     Bot,
     Brain,
     Briefcase,
@@ -135,11 +135,11 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
             <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-transparent via-amber-500/20 to-transparent" />
 
             {/* Logo Area */}
-            <div className={cn("p-8 pb-4 transition-all duration-300", isCollapsed ? "px-4 flex justify-center" : "p-8", isMobile && "p-6 pt-10")}>
-                <Link href="/dashboard" className="group cursor-pointer block" onClick={onNavigate}>
+            <div className={cn("p-8 pb-4 transition-all duration-300 outline-none focus:outline-none focus:ring-0 ring-0", isCollapsed ? "px-4 flex justify-center" : "p-8", isMobile && "p-6 pt-10")}>
+                <Link href="/dashboard" className="group cursor-pointer block outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 ring-0 active:outline-none select-none no-underline" tabIndex={-1} onClick={onNavigate}>
                     {!isCollapsed ? (
                         <>
-                            <div className="flex flex-col items-start leading-none group cursor-pointer transition-all duration-300">
+                            <div className="flex flex-col items-start leading-none outline-none focus:outline-none">
                                 <div className="flex items-center gap-1.5 font-black text-2xl tracking-tighter">
                                     <span className="text-white">NEXUS</span>
                                     <span className="text-amber-500 font-light translate-y-[-1px] text-xl">|</span>
@@ -148,8 +148,11 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                             </div>
                         </>
                     ) : (
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                            <Sparkles className="w-6 h-6 text-white" />
+                        <div className="w-10 h-10 rounded-xl bg-[#1a1a1a] border border-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-900/10 relative overflow-hidden group/logo">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-amber-600/10 to-amber-700/10 opacity-0 group-hover/logo:opacity-100 transition-opacity" />
+                            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-amber-600 leading-none translate-y-[1px]">
+                                N
+                            </span>
                         </div>
                     )}
                 </Link>
@@ -167,6 +170,53 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                         <div className="space-y-1">
                             {section.items.map((item) => {
                                 const isActive = pathname === item.href;
+                                const isComingSoon = (item as any).badge === "Em Breve";
+
+                                const content = (
+                                    <>
+                                        {isActive && (
+                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-500" />
+                                        )}
+
+                                        <item.icon
+                                            className={cn(
+                                                "w-5 h-5 relative z-10 transition-colors shrink-0",
+                                                isActive ? "text-amber-400" : "text-gray-600 group-hover:text-gray-400",
+                                                isComingSoon && "text-gray-700 group-hover:text-gray-700"
+                                            )}
+                                        />
+                                        {!isCollapsed && (
+                                            <div className="flex-1 flex items-center justify-between animate-in fade-in slide-in-from-left-2 duration-300">
+                                                <span className={cn(isComingSoon && "text-gray-600")}>{item.name}</span>
+                                                {(item as any).badge && (
+                                                    <span className={cn(
+                                                        "text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter",
+                                                        isComingSoon ? "bg-gray-800/20 border border-gray-800/30 text-gray-600" : "bg-amber-500/10 border border-amber-500/20 text-amber-400"
+                                                    )}>
+                                                        {(item as any).badge}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                );
+
+                                if (isComingSoon) {
+                                    return (
+                                        <div
+                                            key={item.name}
+                                            title={isCollapsed ? `${item.name} (Em Breve)` : ""}
+                                            className={cn(
+                                                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group relative overflow-hidden",
+                                                isCollapsed && "justify-center px-0",
+                                                "text-gray-600 opacity-60 cursor-default"
+                                            )}
+                                        >
+                                            {content}
+                                        </div>
+                                    );
+                                }
+
                                 return (
                                     <Link
                                         key={item.name}
@@ -181,26 +231,7 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                                 : "text-gray-500 hover:text-gray-200"
                                         )}
                                     >
-                                        {isActive && (
-                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-500" />
-                                        )}
-
-                                        <item.icon
-                                            className={cn(
-                                                "w-5 h-5 relative z-10 transition-colors shrink-0",
-                                                isActive ? "text-amber-400" : "text-gray-600 group-hover:text-gray-400"
-                                            )}
-                                        />
-                                        {!isCollapsed && (
-                                            <div className="flex-1 flex items-center justify-between animate-in fade-in slide-in-from-left-2 duration-300">
-                                                <span>{item.name}</span>
-                                                {(item as any).badge && (
-                                                    <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 uppercase tracking-tighter">
-                                                        {(item as any).badge}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
+                                        {content}
                                     </Link>
                                 );
                             })}
@@ -322,7 +353,7 @@ export function Sidebar() {
             {/* Toggle Button */}
             <button
                 onClick={toggleSidebar}
-                className="absolute -right-3 top-10 w-6 h-6 rounded-full bg-[#1c1c1c] border border-amber-500/50 flex items-center justify-center text-gray-400 hover:text-amber-400 transition-colors z-[100] shadow-[0_0_15px_rgba(245,158,11,0.2)] cursor-pointer"
+                className="absolute -right-3 top-10 w-6 h-6 rounded-full bg-[#1c1c1c] border border-amber-500/50 flex items-center justify-center text-gray-400 hover:text-amber-400 transition-colors z-[100] shadow-[0_0_15px_rgba(245,158,11,0.2)] cursor-pointer focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 active:outline-none"
             >
                 {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>

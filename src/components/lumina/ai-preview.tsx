@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Send, Sparkles, User, Loader2, RefreshCw, Share2, Check, ExternalLink, X } from "lucide-react";
+import { Bot, Send, Wand2, User, Loader2, RefreshCw, Share2, Check, ExternalLink, X } from "lucide-react";
 import { sendAIPreviewMessage, generatePublicChatLink, checkAIResponse } from "@/app/actions/ai-chat";
 import { getMessages } from "@/app/actions/messages";
 import { cn } from "@/lib/utils";
@@ -273,7 +273,7 @@ export function AIPreview() {
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" className="hidden md:flex gap-2 border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:text-white rounded-full ml-4 cursor-pointer">
-                    <Sparkles className="w-4 h-4" />
+                    <Wand2 className="w-4 h-4" />
                     Testar IA
                 </Button>
             </SheetTrigger>

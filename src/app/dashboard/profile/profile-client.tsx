@@ -1,6 +1,6 @@
 "use client";
 
-import { UserCircle, Building2, Mail, Shield, LogOut, Sparkles, Key, Users, Plus, Loader2 } from "lucide-react";
+import { UserCircle, Building2, Mail, Shield, LogOut, Zap, Key, Users, Plus, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -62,7 +62,7 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-900/50">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-900/50">
                         <UserCircle className="w-8 h-8 text-white" />
                     </div>
                     <div>
@@ -82,10 +82,10 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
 
             <Tabs defaultValue="account" className="w-full">
                 <TabsList className="bg-[#141414] border border-[#2a2a2a] p-1 rounded-xl">
-                    <TabsTrigger value="account" className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white rounded-lg">Dados da Conta</TabsTrigger>
-                    <TabsTrigger value="security" className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white rounded-lg">Segurança</TabsTrigger>
+                    <TabsTrigger value="account" className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white rounded-lg cursor-pointer">Dados da Conta</TabsTrigger>
+                    <TabsTrigger value="security" className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white rounded-lg cursor-pointer">Segurança</TabsTrigger>
                     {profile.role === 'admin' && (
-                        <TabsTrigger value="team" className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white rounded-lg">Sua Equipe</TabsTrigger>
+                        <TabsTrigger value="team" className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white rounded-lg cursor-pointer">Sua Equipe</TabsTrigger>
                     )}
                 </TabsList>
 
@@ -93,48 +93,54 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
                     <div className="grid gap-6 md:grid-cols-2">
                         {/* Personal Info Card */}
                         <div className="glass-card rounded-3xl p-8 space-y-6 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[50px] rounded-full pointer-events-none group-hover:bg-purple-500/20 transition-colors" />
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] rounded-full pointer-events-none group-hover:bg-amber-500/20 transition-colors" />
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
-                                    <Sparkles className="w-5 h-5 text-purple-400" />
+                                    <Zap className="w-5 h-5 text-amber-400" />
                                     <h2 className="text-lg font-semibold text-white">Seus Dados</h2>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="p-4 rounded-2xl bg-[#141414] border border-[#2a2a2a] flex items-center justify-between group/item hover:border-purple-500/30 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-gray-400">
-                                            <Mail className="w-5 h-5" />
+                                <div className="p-6 rounded-3xl bg-[#141414] border border-[#2a2a2a] group hover:border-amber-500/30 transition-all">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full overflow-hidden">
+                                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                                            <div className="w-12 h-12 rounded-2xl bg-amber-600/10 flex items-center justify-center text-amber-500 border border-amber-500/10 transition-colors group-hover:bg-amber-600/20 shrink-0">
+                                                <Mail className="w-6 h-6" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <Label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 block">Email de Acesso</Label>
+                                                <p className="text-white text-base font-medium truncate" title={profile.email}>{profile.email}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Email</p>
-                                            <p className="text-gray-200 font-medium">{profile.email}</p>
+
+                                        <div className="shrink-0 self-end sm:self-center">
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm" className="border-amber-500/20 text-amber-500 hover:bg-amber-600 hover:text-white h-9 px-4 rounded-xl cursor-pointer transition-all flex items-center gap-2">
+                                                        <Pencil className="w-3.5 h-3.5" />
+                                                        Alterar Email
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent className="bg-[#121212] border-[#2a2a2a] text-white">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Alterar Email de Acesso</DialogTitle>
+                                                    </DialogHeader>
+                                                    <form action={formActionEmail} className="space-y-4 pt-4">
+                                                        {emailState?.error && <p className="text-red-400 text-sm bg-red-500/10 p-2 rounded">{emailState.error}</p>}
+                                                        {emailState?.success && <p className="text-green-400 text-sm bg-green-500/10 p-2 rounded">{emailState.success}</p>}
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="email">Novo Email</Label>
+                                                            <Input id="email" name="email" type="email" required className="bg-[#0a0a0a] border-[#333]" />
+                                                        </div>
+                                                        <SubmitButton>Salvar Alteração</SubmitButton>
+                                                    </form>
+                                                </DialogContent>
+                                            </Dialog>
                                         </div>
                                     </div>
-
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="text-xs text-purple-400 hover:text-purple-300">Alterar</Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="bg-[#121212] border-[#2a2a2a] text-white">
-                                            <DialogHeader>
-                                                <DialogTitle>Alterar Email de Acesso</DialogTitle>
-                                            </DialogHeader>
-                                            <form action={formActionEmail} className="space-y-4 pt-4">
-                                                {emailState?.error && <p className="text-red-400 text-sm bg-red-500/10 p-2 rounded">{emailState.error}</p>}
-                                                {emailState?.success && <p className="text-green-400 text-sm bg-green-500/10 p-2 rounded">{emailState.success}</p>}
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="email">Novo Email</Label>
-                                                    <Input id="email" name="email" type="email" required className="bg-[#0a0a0a] border-[#333]" />
-                                                </div>
-                                                <SubmitButton>Salvar Alteração</SubmitButton>
-                                            </form>
-                                        </DialogContent>
-                                    </Dialog>
                                 </div>
-
-                                <div className="p-4 rounded-2xl bg-[#141414] border border-[#2a2a2a] flex items-center gap-4 group/item hover:border-purple-500/30 transition-colors">
+                                <div className="p-4 rounded-2xl bg-[#141414] border border-[#2a2a2a] flex items-center gap-4 group/item hover:border-amber-500/30 transition-colors">
                                     <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-gray-400">
                                         <Shield className="w-5 h-5" />
                                     </div>
@@ -168,14 +174,14 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
                                 <div className="p-4 rounded-2xl bg-[#141414] border border-[#2a2a2a] flex justify-between items-center hover:border-blue-500/30 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-gray-400">
-                                            <Sparkles className="w-5 h-5 text-yellow-500" />
+                                            <Zap className="w-5 h-5 text-amber-500" />
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Plano Atual</p>
                                             <p className="text-gray-200 font-medium capitalize">{profile.tenant.planStatus}</p>
                                         </div>
                                     </div>
-                                    <Button variant="outline" size="sm" className="text-xs border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-500/20">
+                                    <Button variant="outline" size="sm" className="text-[10px] h-7 border-amber-500/30 text-amber-500 hover:text-white hover:bg-amber-600 hover:border-amber-600 cursor-pointer transition-all">
                                         Upgrade
                                     </Button>
                                 </div>
@@ -223,7 +229,7 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
                                 </div>
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                        <Button className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-900/20 rounded-xl cursor-pointer transition-all">
                                             <Plus className="w-4 h-4 mr-2" />
                                             Convidar Usuário
                                         </Button>
@@ -266,7 +272,7 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
                                 {teamMembers.map((member) => (
                                     <div key={member.id} className="p-4 border-t border-[#2a2a2a] hover:bg-[#1a1a1a] transition-colors grid grid-cols-4 items-center">
                                         <div className="col-span-2 flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold">
+                                            <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold">
                                                 {member.email.substring(0, 2).toUpperCase()}
                                             </div>
                                             <div>
@@ -275,7 +281,7 @@ export function ProfileClient({ profile, teamMembers = [] }: ProfileClientProps)
                                             </div>
                                         </div>
                                         <div>
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400 capitalize">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 capitalize">
                                                 {member.role}
                                             </span>
                                         </div>

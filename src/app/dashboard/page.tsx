@@ -22,10 +22,6 @@ export default async function DashboardHome() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="border-[#3a3a3a] bg-[#222] text-gray-300 hover:bg-[#333] hover:text-white rounded-xl">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Personalizar
-                    </Button>
                 </div>
             </div>
 

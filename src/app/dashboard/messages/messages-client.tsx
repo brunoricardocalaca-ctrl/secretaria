@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, MoreVertical, ChevronLeft, Phone, Video, Paperclip, Send, Mic, Smile, Check, CheckCheck, Clock, User, Sparkles, Loader2, RefreshCw, MessageSquare } from "lucide-react";
+import { Search, MoreVertical, ChevronLeft, Phone, Video, Paperclip, Send, Mic, Smile, Check, CheckCheck, Clock, User, FlaskConical, Loader2, RefreshCw, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -156,8 +156,8 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                             <button
                                 onClick={() => setActiveTab('whatsapp')}
                                 className={cn(
-                                    "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
-                                    activeTab === 'whatsapp' ? "bg-purple-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"
+                                    "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer",
+                                    activeTab === 'whatsapp' ? "bg-amber-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"
                                 )}
                             >
                                 <MessageSquare className="w-3 h-3" /> Mensagens
@@ -165,18 +165,18 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                             <button
                                 onClick={() => setActiveTab('test')}
                                 className={cn(
-                                    "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
+                                    "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer",
                                     activeTab === 'test' ? "bg-amber-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300"
                                 )}
                             >
-                                <Sparkles className="w-3 h-3" /> Testes IA
+                                <FlaskConical className="w-3 h-3" /> Testes IA
                             </button>
                         </div>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                             <Input
                                 placeholder="Buscar conversa..."
-                                className="bg-[#1a1a1a] border-none pl-9 h-10 rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-purple-500/50 placeholder:text-gray-600"
+                                className="bg-[#1a1a1a] border-none pl-9 h-10 rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-amber-500/50 placeholder:text-gray-600"
                             />
                         </div>
                     </div>
@@ -188,10 +188,10 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                 <Loader2 className="w-6 h-6 animate-spin" />
                                 <span className="text-xs">Carregando conversas...</span>
                             </div>
-                        ) : chats.filter(c => activeTab === 'test' ? c.isTest : !c.isTest).length === 0 ? (
+                        ) : chats.filter(c => (activeTab === 'test' ? c.isTest : !c.isTest) && !c.whatsapp.includes('@g.us')).length === 0 ? (
                             <div className="p-8 text-center space-y-3">
                                 <div className="w-12 h-12 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto border border-[#2a2a2a] opacity-50">
-                                    {activeTab === 'whatsapp' ? <MessageSquare className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                                    {activeTab === 'whatsapp' ? <MessageSquare className="w-5 h-5" /> : <FlaskConical className="w-5 h-5" />}
                                 </div>
                                 <p className="text-xs text-gray-500">
                                     {activeTab === 'whatsapp' ? "Nenhuma mensagem de WhatsApp ainda." : "Nenhum chat de teste gerado."}
@@ -199,7 +199,7 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                             </div>
                         ) : (
                             chats
-                                .filter(chat => activeTab === 'test' ? chat.isTest : !chat.isTest)
+                                .filter(chat => (activeTab === 'test' ? chat.isTest : !chat.isTest) && !chat.whatsapp.includes('@g.us'))
                                 .map(chat => (
                                     <div
                                         key={chat.id}
@@ -218,7 +218,7 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                                 "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs",
                                                 chat.isTest ? "bg-amber-600/20 border border-amber-500/30" : getAvatarColor(chat.name)
                                             )}>
-                                                {chat.isTest ? <Sparkles className="w-4 h-4 text-amber-500" /> : chat.name.substring(0, 2).toUpperCase()}
+                                                {chat.isTest ? <FlaskConical className="w-4 h-4 text-amber-500" /> : chat.name.substring(0, 2).toUpperCase()}
                                             </div>
                                             <div className={cn(
                                                 "absolute bottom-0 right-0 w-3 h-3 border-2 border-[#1a1a1a] rounded-full",
@@ -290,7 +290,7 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                             />
                                         ) : (
                                             <h3
-                                                className="text-sm font-semibold text-white cursor-pointer hover:text-purple-400 transition-colors"
+                                                className="text-sm font-semibold text-white cursor-pointer hover:text-amber-400 transition-colors"
                                                 onClick={() => {
                                                     setTempName(activeChat?.name || "");
                                                     setEditingName(true);
@@ -368,25 +368,25 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                                     <div className={cn(
                                                         "max-w-[70%] rounded-2xl p-4 relative group shadow-lg transition-all",
                                                         isRight
-                                                            ? (isHuman ? "bg-purple-600 text-white rounded-br-sm" : "bg-indigo-600 text-white rounded-br-sm")
+                                                            ? (isHuman ? "bg-amber-600 text-white rounded-br-sm" : "bg-amber-600 text-white rounded-br-sm shadow-amber-900/20")
                                                             : "bg-[#1a1a1a] text-gray-200 border border-[#2a2a2a] rounded-bl-sm"
                                                     )}>
                                                         {isAi && (
-                                                            <div className="flex items-center gap-1.5 mb-2 text-indigo-200 text-[10px] font-bold uppercase tracking-wider">
-                                                                <Sparkles className="w-3 h-3" /> IA Resposta
+                                                            <div className="flex items-center gap-1.5 mb-2 text-amber-200 text-[10px] font-bold uppercase tracking-wider">
+                                                                <FlaskConical className="w-3 h-3" /> IA Resposta
                                                             </div>
                                                         )}
                                                         {isHuman && (
-                                                            <div className="flex items-center gap-1.5 mb-2 text-purple-200 text-[10px] font-bold uppercase tracking-wider">
+                                                            <div className="flex items-center gap-1.5 mb-2 text-amber-200 text-[10px] font-bold uppercase tracking-wider">
                                                                 <User className="w-3 h-3" /> Enviado por Humano
                                                             </div>
                                                         )}
                                                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                                                         <div className="flex items-center justify-end gap-1 mt-1">
-                                                            <span className={cn("text-[10px]", isRight ? "text-purple-200" : "text-gray-500")}>
+                                                            <span className={cn("text-[10px]", isRight ? "text-amber-200" : "text-gray-500")}>
                                                                 {msg.time}
                                                             </span>
-                                                            {isRight && <CheckCheck className="w-3 h-3 text-purple-200" />}
+                                                            {isRight && <CheckCheck className="w-3 h-3 text-amber-200" />}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -406,7 +406,7 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                     onChange={handleFileSelect}
                                     accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
                                 />
-                                <div className="flex items-end gap-2 bg-[#1a1a1a] p-2 rounded-3xl border border-[#2a2a2a] focus-within:border-purple-500/30 transition-colors">
+                                <div className="flex items-end gap-2 bg-[#1a1a1a] p-2 rounded-3xl border border-[#2a2a2a] focus-within:border-amber-500/30 transition-colors">
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -432,10 +432,10 @@ export function MessagesClient({ tenantId }: { tenantId?: string }) {
                                     <div className="flex items-center gap-1">
                                         {sending || uploading ? (
                                             <div className="h-10 w-10 flex items-center justify-center">
-                                                <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+                                                <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
                                             </div>
                                         ) : input.trim() ? (
-                                            <Button onClick={handleSend} size="icon" className="bg-purple-600 hover:bg-purple-700 text-white rounded-full h-10 w-10 shrink-0 animate-in zoom-in spin-in-90 duration-300">
+                                            <Button onClick={handleSend} size="icon" className="bg-amber-600 hover:bg-amber-700 text-white rounded-full h-10 w-10 shrink-0 animate-in zoom-in spin-in-90 duration-300">
                                                 <Send className="w-4 h-4 ml-0.5" />
                                             </Button>
                                         ) : null}

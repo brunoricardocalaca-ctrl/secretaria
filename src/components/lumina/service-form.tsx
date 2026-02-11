@@ -7,10 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { upsertService } from "@/app/actions/services";
-import { ArrowRight, Bot, Check, ChevronDown, Clock, CloudLightning, DollarSign, HelpCircle, LayoutGrid, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowRight, Bot, Check, ChevronDown, Clock, CloudLightning, DollarSign, HelpCircle, LayoutGrid, Plus, Save, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { BrainCircuit, Flag, MessageCircle, User as UserIcon, Send, Ban, Info, Wand2, Loader2, Camera, RefreshCw, Copy } from "lucide-react";
+import { BrainCircuit, Flag, MessageCircle, User as UserIcon, Send, Ban, Info, Wand2, Loader2, Camera, RefreshCw, Copy, Brain } from "lucide-react";
 import { generateServiceDraft, generateAssessmentDescription } from "@/app/actions/ai-service-generator";
 import { parsePriceTableFile } from "@/app/actions/price-table-parser";
 import { ExpandableTextarea } from "@/components/ui/expandable-textarea";
@@ -24,7 +24,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                 {/* Header */}
                 <div className="bg-[#1A1A1A] p-4 border-b border-[#2A2A2A] flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
                             <Bot className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -43,7 +43,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                     {/* Intro */}
                     <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500">
                         <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                            <Bot className="w-4 h-4 text-purple-400" />
+                            <Bot className="w-4 h-4 text-amber-400" />
                         </div>
                         <div className="space-y-2 max-w-[85%]">
                             <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200">
@@ -57,7 +57,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                         <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
                             <UserIcon className="w-4 h-4 text-gray-400" />
                         </div>
-                        <div className="bg-purple-600/20 text-purple-100 p-3 rounded-2xl rounded-tr-none border border-purple-500/20">
+                        <div className="bg-amber-600/20 text-amber-100 p-3 rounded-2xl rounded-tr-none border border-amber-500/20">
                             Olá! Queria saber mais sobre o <strong>{data.name || "serviço"}</strong>.
                         </div>
                     </div>
@@ -65,7 +65,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                     {/* AI Confirmation & Context */}
                     <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500 delay-300 fill-mode-backwards">
                         <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                            <Bot className="w-4 h-4 text-purple-400" />
+                            <Bot className="w-4 h-4 text-amber-400" />
                         </div>
                         <div className="space-y-2 max-w-[85%]">
                             <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200">
@@ -82,7 +82,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                         <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
                             <UserIcon className="w-4 h-4 text-gray-400" />
                         </div>
-                        <div className="bg-purple-600/20 text-purple-100 p-3 rounded-2xl rounded-tr-none border border-purple-500/20">
+                        <div className="bg-amber-600/20 text-amber-100 p-3 rounded-2xl rounded-tr-none border border-amber-500/20">
                             <em>(Cliente descreve o problema/desejo...)</em>
                         </div>
                     </div>
@@ -91,11 +91,11 @@ const PreviewChat = ({ data }: { data: any }) => {
                     {data.hasDiagnosticQuestions && data.diagnosticQuestions.length > 0 && (
                         <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500 delay-700 fill-mode-backwards">
                             <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                                <Sparkles className="w-4 h-4 text-amber-400" />
+                                <Wand2 className="w-4 h-4 text-amber-400" />
                             </div>
                             <div className="space-y-2 max-w-[85%]">
-                                <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-                                    <p className="text-xs text-purple-400 font-bold mb-1 uppercase tracking-wider">Qualificação Ativada</p>
+                                <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                                    <p className="text-xs text-amber-400 font-bold mb-1 uppercase tracking-wider">Qualificação Ativada</p>
                                     Entendi perfeitamente. Para eu te orientar melhor:
                                     <br /><br />
                                     "{data.diagnosticQuestions[0]}"
@@ -112,7 +112,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                     {!data.hasDiagnosticQuestions && (
                         <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500 delay-700 fill-mode-backwards">
                             <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                                <Bot className="w-4 h-4 text-purple-400" />
+                                <Bot className="w-4 h-4 text-amber-400" />
                             </div>
                             <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200">
                                 Entendi! O {data.name || "serviço"} funciona assim... [Explicação do Serviço]
@@ -127,7 +127,7 @@ const PreviewChat = ({ data }: { data: any }) => {
                     <div className="h-10 bg-[#0A0A0A] rounded-full flex-1 border border-[#2A2A2A] px-4 flex items-center text-gray-600 text-xs">
                         Digite sua resposta...
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center">
                         <Send className="w-4 h-4 text-white" />
                     </div>
                 </div>
@@ -408,7 +408,7 @@ export function ServiceForm({
                     {/* Header */}
                     <div className="bg-[#1A1A1A] p-4 border-b border-[#2A2A2A] flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
                                 <Bot className="w-6 h-6 text-white" />
                             </div>
                             <div>
@@ -427,7 +427,7 @@ export function ServiceForm({
                         {/* Intro */}
                         <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500">
                             <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                                <Bot className="w-4 h-4 text-purple-400" />
+                                <Bot className="w-4 h-4 text-amber-400" />
                             </div>
                             <div className="space-y-2 max-w-[85%]">
                                 <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200">
@@ -441,7 +441,7 @@ export function ServiceForm({
                             <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
                                 <UserIcon className="w-4 h-4 text-gray-400" />
                             </div>
-                            <div className="bg-purple-600/20 text-purple-100 p-3 rounded-2xl rounded-tr-none border border-purple-500/20">
+                            <div className="bg-amber-600/20 text-amber-100 p-3 rounded-2xl rounded-tr-none border border-amber-500/20">
                                 Olá! Queria saber mais sobre o <strong>{data.name || "serviço"}</strong>.
                             </div>
                         </div>
@@ -449,7 +449,7 @@ export function ServiceForm({
                         {/* AI Confirmation & Context */}
                         <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500 delay-300 fill-mode-backwards">
                             <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                                <Bot className="w-4 h-4 text-purple-400" />
+                                <Bot className="w-4 h-4 text-amber-400" />
                             </div>
                             <div className="space-y-2 max-w-[85%]">
                                 <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200">
@@ -466,7 +466,7 @@ export function ServiceForm({
                             <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
                                 <UserIcon className="w-4 h-4 text-gray-400" />
                             </div>
-                            <div className="bg-purple-600/20 text-purple-100 p-3 rounded-2xl rounded-tr-none border border-purple-500/20">
+                            <div className="bg-amber-600/20 text-amber-100 p-3 rounded-2xl rounded-tr-none border border-amber-500/20">
                                 <em>(Cliente descreve o problema/desejo...)</em>
                             </div>
                         </div>
@@ -475,11 +475,11 @@ export function ServiceForm({
                         {data.hasDiagnosticQuestions && data.diagnosticQuestions.length > 0 && (
                             <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500 delay-700 fill-mode-backwards">
                                 <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                                    <Sparkles className="w-4 h-4 text-amber-400" />
+                                    <Wand2 className="w-4 h-4 text-amber-400" />
                                 </div>
                                 <div className="space-y-2 max-w-[85%]">
-                                    <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-                                        <p className="text-xs text-purple-400 font-bold mb-1 uppercase tracking-wider">Qualificação Ativada</p>
+                                    <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                                        <p className="text-xs text-amber-400 font-bold mb-1 uppercase tracking-wider">Qualificação Ativada</p>
                                         Entendi perfeitamente. Para eu te orientar melhor:
                                         <br /><br />
                                         "{data.diagnosticQuestions[0]}"
@@ -496,7 +496,7 @@ export function ServiceForm({
                         {!data.hasDiagnosticQuestions && (
                             <div className="flex gap-4 animate-in slide-in-from-left-2 duration-500 delay-700 fill-mode-backwards">
                                 <div className="w-8 h-8 rounded-full bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                                    <Bot className="w-4 h-4 text-purple-400" />
+                                    <Bot className="w-4 h-4 text-amber-400" />
                                 </div>
                                 <div className="bg-[#1F1F1F] p-3 rounded-2xl rounded-tl-none text-gray-200">
                                     Entendi! O {data.name} funciona assim... [Explicação do Serviço]
@@ -511,7 +511,7 @@ export function ServiceForm({
                         <div className="h-10 bg-[#0A0A0A] rounded-full flex-1 border border-[#2A2A2A] px-4 flex items-center text-gray-600 text-xs">
                             Digite sua resposta...
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center">
                             <Send className="w-4 h-4 text-white" />
                         </div>
                     </div>
@@ -558,7 +558,7 @@ export function ServiceForm({
                     <div className="space-y-10">
 
                         {/* Status Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-purple-500/5 rounded-2xl border border-purple-500/10">
+                        <div className="flex items-center justify-between p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10">
                             <div className="space-y-1">
                                 <Label className="text-white font-medium">Status do Serviço</Label>
                                 <p className="text-xs text-gray-400">Ative para permitir agendamentos e vendas pela IA</p>
@@ -583,7 +583,7 @@ export function ServiceForm({
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="Ex: Harmonização Facial"
-                                    className="bg-[#0A0A0A] border-transparent focus:border-purple-500/50 text-white h-14 text-lg rounded-xl"
+                                    className="bg-[#0A0A0A] border-transparent focus:border-amber-500/50 text-white h-14 text-lg rounded-xl"
                                     required
                                 />
                             </div>
@@ -595,7 +595,7 @@ export function ServiceForm({
                                         type="button"
                                         onClick={handleGenerateAI}
                                         disabled={generating}
-                                        className="h-7 text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-pink-500/20 px-3 rounded-full transition-all hover:scale-105 active:scale-95"
+                                        className="h-7 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white border-0 shadow-lg shadow-amber-500/20 px-3 rounded-full transition-all hover:scale-105 active:scale-95"
                                     >
                                         {generating ? (
                                             <>
@@ -604,7 +604,7 @@ export function ServiceForm({
                                             </>
                                         ) : (
                                             <>
-                                                <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" />
+                                                <Wand2 className="w-3 h-3 mr-1.5 text-yellow-300" />
                                                 Gerar tudo com IA
                                             </>
                                         )}
@@ -614,7 +614,7 @@ export function ServiceForm({
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Descreva TODOS os detalhes do serviço. Quanto mais informação, melhor a IA conseguirá vender e tirar dúvidas do cliente."
-                                    className="bg-[#0A0A0A] border-transparent focus:border-purple-500/50 text-white text-base leading-relaxed p-4 shadow-inner"
+                                    className="bg-[#0A0A0A] border-transparent focus:border-amber-500/50 text-white text-base leading-relaxed p-4 shadow-inner"
                                     compactHeight="min-h-[80px]"
                                     expandedHeight="min-h-[250px]"
                                 />
@@ -629,7 +629,7 @@ export function ServiceForm({
                                             <Switch
                                                 checked={!formData.durationHidden}
                                                 onCheckedChange={(checked) => setFormData({ ...formData, durationHidden: !checked })}
-                                                className="scale-75 data-[state=checked]:bg-purple-600"
+                                                className="scale-75 data-[state=checked]:bg-amber-600"
                                             />
                                         </div>
                                     </div>
@@ -638,7 +638,7 @@ export function ServiceForm({
                                             type="number"
                                             value={formData.durationMin}
                                             onChange={(e) => setFormData({ ...formData, durationMin: e.target.value })}
-                                            className="bg-[#0A0A0A] border-transparent focus:border-purple-500/50 text-white h-12 rounded-xl animate-in zoom-in-95 duration-200"
+                                            className="bg-[#0A0A0A] border-transparent focus:border-amber-500/50 text-white h-12 rounded-xl animate-in zoom-in-95 duration-200"
                                             placeholder="Minutos"
                                         />
                                     )}
@@ -646,13 +646,13 @@ export function ServiceForm({
                             </div>
                             <div className="space-y-3 col-span-2">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Sparkles className="w-4 h-4 text-purple-400" />
-                                    <Label className="text-xs uppercase tracking-widest text-purple-400 font-semibold">Tags Positivas</Label>
+                                    <BrainCircuit className="w-4 h-4 text-amber-400" />
+                                    <Label className="text-xs uppercase tracking-widest text-amber-400 font-semibold">Tags Positivas</Label>
                                 </div>
 
-                                <div className="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3 flex gap-3 mb-2">
-                                    <Info className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-purple-200/80 leading-relaxed">
+                                <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 flex gap-3 mb-2">
+                                    <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-amber-200/80 leading-relaxed">
                                         <strong>Sinônimos e Variações:</strong> Use tags positivas para ensinar a IA como seu cliente pode chamar este serviço (ex: para "Corte", adicione "tesoura, aparar, mudar visual").
                                     </p>
                                 </div>
@@ -661,7 +661,7 @@ export function ServiceForm({
                                     value={formData.positiveTags}
                                     onChange={(e) => setFormData({ ...formData, positiveTags: e.target.value })}
                                     placeholder="Ex: protocolo de emagrecimento, perda de peso, secar barriga"
-                                    className="bg-[#0A0A0A] border-transparent focus:border-purple-500/50 text-white min-h-[80px] rounded-xl resize-none"
+                                    className="bg-[#0A0A0A] border-transparent focus:border-amber-500/50 text-white min-h-[80px] rounded-xl resize-none"
                                 />
                             </div>
                         </div>
@@ -704,7 +704,7 @@ export function ServiceForm({
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <BrainCircuit className="w-5 h-5 text-purple-400" />
+                                        <BrainCircuit className="w-5 h-5 text-amber-400" />
                                         <h4 className="text-lg text-white font-medium">Qualificação do Cliente (IA)</h4>
                                     </div>
                                     <p className="text-sm text-gray-500">Perguntas estratégicas para a IA entender a necessidade do lead.</p>
@@ -721,7 +721,7 @@ export function ServiceForm({
                                                 : prev.diagnosticQuestions
                                         }));
                                     }}
-                                    className="data-[state=checked]:bg-purple-600"
+                                    className="data-[state=checked]:bg-amber-600"
                                 />
                             </div>
 
@@ -729,8 +729,8 @@ export function ServiceForm({
                                 <div className="space-y-4 animate-in slide-in-from-top-4 fade-in duration-300">
                                     <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h5 className="text-sm font-medium text-purple-300 flex items-center gap-2">
-                                                <Sparkles className="w-3 h-3" />
+                                            <h5 className="text-sm font-medium text-amber-300 flex items-center gap-2">
+                                                <Wand2 className="w-3 h-3" />
                                                 Perguntas de Aprofundamento
                                             </h5>
                                             <span className="text-xs text-gray-500">{formData.diagnosticQuestions.length} perguntas</span>
@@ -747,7 +747,7 @@ export function ServiceForm({
                                                             newQuestions[index] = e.target.value;
                                                             setFormData({ ...formData, diagnosticQuestions: newQuestions });
                                                         }}
-                                                        className="bg-[#0A0A0A] border-[#2a2a2a] text-sm min-h-[60px] resize-none focus-visible:ring-purple-500/30"
+                                                        className="bg-[#0A0A0A] border-[#2a2a2a] text-sm min-h-[60px] resize-none focus-visible:ring-amber-500/30"
                                                         placeholder={`Ex: ${defaultQuestions[index % defaultQuestions.length]}`}
                                                     />
                                                     <Button
@@ -774,7 +774,7 @@ export function ServiceForm({
                                             })}
                                             variant="outline"
                                             size="sm"
-                                            className="w-full border-dashed border-[#333] hover:border-purple-500/50 hover:bg-purple-500/5 text-gray-400 hover:text-purple-400"
+                                            className="w-full border-dashed border-[#333] hover:border-amber-500/50 hover:bg-amber-500/5 text-gray-400 hover:text-amber-400"
                                         >
                                             <Plus className="w-4 h-4 mr-2" />
                                             Adicionar Nova Pergunta
@@ -804,7 +804,7 @@ export function ServiceForm({
                                     <Switch
                                         checked={formData.priceHidden}
                                         onCheckedChange={(checked) => setFormData({ ...formData, priceHidden: checked })}
-                                        className="scale-90 data-[state=checked]:bg-purple-600"
+                                        className="scale-90 data-[state=checked]:bg-amber-600"
                                     />
                                 </div>
                             </div>
@@ -877,7 +877,7 @@ export function ServiceForm({
 
                                         {formData.pricingModel === 'table' && (
                                             <div className="space-y-6">
-                                                <div className="bg-[#0A0A0A] p-4 rounded-xl border border-dashed border-purple-500/20">
+                                                <div className="bg-[#0A0A0A] p-4 rounded-xl border border-dashed border-amber-500/20">
                                                     <input
                                                         type="file"
                                                         id="price-table-upload"
@@ -887,8 +887,8 @@ export function ServiceForm({
                                                     />
                                                     <div className="flex flex-col items-center gap-2 text-center">
                                                         <div className="flex items-center gap-3 mb-2">
-                                                            <div className="p-2 bg-purple-500/10 rounded-full">
-                                                                <FileSpreadsheet className="w-5 h-5 text-purple-400" />
+                                                            <div className="p-2 bg-amber-500/10 rounded-full">
+                                                                <FileSpreadsheet className="w-5 h-5 text-amber-400" />
                                                             </div>
                                                             <div className="p-2 bg-blue-500/10 rounded-full">
                                                                 <FileText className="w-5 h-5 text-blue-400" />
@@ -903,7 +903,7 @@ export function ServiceForm({
                                                             variant="outline"
                                                             onClick={() => document.getElementById('price-table-upload')?.click()}
                                                             disabled={parsingFile}
-                                                            className="bg-[#121212] border-[#222] hover:border-purple-500/50 hover:bg-purple-500/5 text-gray-300 hover:text-purple-400 transition-all px-6 h-11 rounded-xl"
+                                                            className="bg-[#121212] border-[#222] hover:border-amber-500/50 hover:bg-amber-500/5 text-gray-300 hover:text-amber-400 transition-all px-6 h-11 rounded-xl"
                                                         >
                                                             {parsingFile ? (
                                                                 <>
@@ -933,7 +933,7 @@ export function ServiceForm({
                                                                     newGroups[groupIndex].title = e.target.value;
                                                                     setFormData({ ...formData, priceTableItems: newGroups });
                                                                 }}
-                                                                className="bg-transparent border-none text-purple-400 font-semibold text-sm placeholder:text-gray-700 p-0 h-auto focus-visible:ring-0 w-full"
+                                                                className="bg-transparent border-none text-amber-400 font-semibold text-sm placeholder:text-gray-700 p-0 h-auto focus-visible:ring-0 w-full"
                                                             />
                                                             <div className="flex items-center gap-1">
                                                                 <button
@@ -1021,7 +1021,7 @@ export function ServiceForm({
                                                                     newGroups[groupIndex].items.push({ name: "", price: "" });
                                                                     setFormData({ ...formData, priceTableItems: newGroups });
                                                                 }}
-                                                                className="text-xs text-gray-500 hover:text-purple-400 hover:bg-transparent px-0"
+                                                                className="text-xs text-gray-500 hover:text-amber-400 hover:bg-transparent px-0"
                                                             >
                                                                 + Adicionar Item
                                                             </Button>
@@ -1036,7 +1036,7 @@ export function ServiceForm({
                                                         ...formData,
                                                         priceTableItems: [...formData.priceTableItems, { title: "Novo Grupo", items: [{ name: "", price: "" }] }]
                                                     })}
-                                                    className="w-full border-dashed border-[#2a2a2a] hover:bg-purple-500/10 hover:border-purple-500/30 text-gray-400 hover:text-purple-400 cursor-pointer h-12 rounded-xl"
+                                                    className="w-full border-dashed border-[#2a2a2a] hover:bg-amber-500/10 hover:border-amber-500/30 text-gray-400 hover:text-amber-400 cursor-pointer h-12 rounded-xl"
                                                 >
                                                     <Plus className="w-4 h-4 mr-2" />
                                                     Adicionar Novo Grupo
@@ -1058,7 +1058,7 @@ export function ServiceForm({
                                 <Switch
                                     checked={formData.hasEvaluation}
                                     onCheckedChange={(checked) => setFormData({ ...formData, hasEvaluation: checked, requiresEval: checked })}
-                                    className="data-[state=checked]:bg-purple-600 scale-110"
+                                    className="data-[state=checked]:bg-amber-600 scale-110"
                                 />
                             </div>
 
@@ -1071,7 +1071,7 @@ export function ServiceForm({
                                                 value={formData.evaluationName}
                                                 onChange={(e) => setFormData({ ...formData, evaluationName: e.target.value })}
                                                 placeholder="Ex: Avaliação, Consulta Estética, Diagnóstico, etc."
-                                                className="bg-[#121212] border-transparent focus:border-purple-500/50 text-white rounded-xl h-12"
+                                                className="bg-[#121212] border-transparent focus:border-amber-500/50 text-white rounded-xl h-12"
                                             />
                                             <p className="text-[10px] text-gray-500 italic">
                                                 Exemplos: Consulta Estética, Diagnóstico do Envelhecimento, Consulta Anti-Pochete, Avaliação Tricoscópica.
@@ -1086,7 +1086,7 @@ export function ServiceForm({
                                                     size="sm"
                                                     onClick={(e) => { e.preventDefault(); handleGenerateAssessmentAI(); }}
                                                     disabled={generatingAssessment}
-                                                    className="h-7 text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white border-0 shadow-lg shadow-pink-500/20 px-3 rounded-full transition-all hover:scale-105 active:scale-95"
+                                                    className="h-7 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white border-0 shadow-lg shadow-amber-900/20 px-3 rounded-full transition-all hover:scale-105 active:scale-95"
                                                 >
                                                     {generatingAssessment ? (
                                                         <>
@@ -1095,7 +1095,7 @@ export function ServiceForm({
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" />
+                                                            <Wand2 className="w-3 h-3 mr-1.5 text-yellow-300" />
                                                             Gerar com IA
                                                         </>
                                                     )}
@@ -1105,7 +1105,7 @@ export function ServiceForm({
                                                 value={formData.evaluationDescription}
                                                 onChange={(e) => setFormData({ ...formData, evaluationDescription: e.target.value })}
                                                 placeholder="Explique como funciona a avaliação (ex: 'Analisamos a pele para determinar o número de sessões')."
-                                                className="bg-[#121212] border-transparent focus:border-purple-500/50 text-white rounded-xl"
+                                                className="bg-[#121212] border-transparent focus:border-amber-500/50 text-white rounded-xl"
                                             />
                                         </div>
                                     </div>
@@ -1188,18 +1188,18 @@ export function ServiceForm({
                                 <Switch
                                     checked={showImage}
                                     onCheckedChange={setShowImage}
-                                    className="data-[state=checked]:bg-purple-600 scale-110"
+                                    className="data-[state=checked]:bg-amber-600 scale-110"
                                 />
                             </div>
 
                             {showImage && (
                                 <div className="flex flex-col items-center justify-center p-6 border border-[#1F1F1F] rounded-2xl bg-[#0A0A0A]/50 animate-in slide-in-from-top-4 fade-in duration-500">
-                                    <div className="w-40 h-40 relative group bg-[#0A0A0A] rounded-2xl border-2 border-dashed border-[#2a2a2a] hover:border-purple-500/30 transition-colors flex items-center justify-center overflow-hidden cursor-pointer">
+                                    <div className="w-40 h-40 relative group bg-[#0A0A0A] rounded-2xl border-2 border-dashed border-[#2a2a2a] hover:border-amber-500/30 transition-colors flex items-center justify-center overflow-hidden cursor-pointer">
                                         {formData.imageUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="text-center text-gray-500 group-hover:text-purple-400 transition-colors">
+                                            <div className="text-center text-gray-500 group-hover:text-amber-400 transition-colors">
                                                 <Camera className="w-8 h-8 mx-auto mb-2 opacity-30 group-hover:opacity-60" />
                                                 <p className="text-xs">Foto do Serviço</p>
                                             </div>
@@ -1213,7 +1213,7 @@ export function ServiceForm({
                                         />
                                         {uploading && (
                                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                                <RefreshCw className="w-6 h-6 animate-spin text-purple-500" />
+                                                <RefreshCw className="w-6 h-6 animate-spin text-amber-500" />
                                             </div>
                                         )}
                                     </div>
@@ -1238,7 +1238,7 @@ export function ServiceForm({
                         <Button type="button" variant="outline" onClick={onCancel} className="flex-1 h-14 rounded-2xl border-gray-800 text-white hover:bg-[#1F1F1F]">
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={loading} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white h-14 rounded-2xl shadow-xl shadow-purple-900/20 font-semibold tracking-tight">
+                        <Button type="submit" disabled={loading} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white h-14 rounded-2xl shadow-xl shadow-amber-900/20 font-semibold tracking-tight">
                             {loading ? (
                                 <>
                                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -1251,14 +1251,14 @@ export function ServiceForm({
                     <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#121212]/90 backdrop-blur-md border-t border-[#1F1F1F] z-50 flex justify-center animate-in slide-in-from-bottom-5">
                         <div className="flex gap-4 w-full max-w-3xl items-center justify-between">
                             <div className="text-xs text-gray-500 hidden md:block">
-                                <Info className="w-4 h-4 inline mr-2 text-purple-500" />
+                                <Info className="w-4 h-4 inline mr-2 text-amber-500" />
                                 Lembre-se de salvar as alterações.
                             </div>
                             <div className="flex gap-4 w-full md:w-auto">
                                 <Button type="button" variant="outline" onClick={onCancel} className="flex-1 md:w-32 h-12 rounded-xl border-gray-800 text-white hover:bg-[#1F1F1F]">
                                     Cancelar
                                 </Button>
-                                <Button type="submit" form="service-form" disabled={loading} className="flex-1 md:w-48 bg-purple-600 hover:bg-purple-700 text-white h-12 rounded-xl shadow-xl shadow-purple-900/20 font-semibold tracking-tight transition-all hover:scale-105 active:scale-95">
+                                <Button type="submit" form="service-form" disabled={loading} className="flex-1 md:w-48 bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-xl shadow-xl shadow-amber-900/20 font-semibold tracking-tight transition-all hover:scale-105 active:scale-95">
                                     {loading ? (
                                         <>
                                             <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

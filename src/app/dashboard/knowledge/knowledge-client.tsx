@@ -49,9 +49,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
     const [newFaq, setNewFaq] = useState({
         id: "",
         question: "",
-        answer: "",
-        isPriceList: false,
-        priceItems: [{ name: "", price: "" }] as { name: string, price: string }[]
+        answer: ""
     });
 
     // Sync State
@@ -83,29 +81,19 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
     }
 
     async function handleSave() {
-        let finalAnswer = newFaq.answer;
-
-        if (newFaq.isPriceList) {
-            const validItems = newFaq.priceItems.filter(item => item.name && item.price);
-            if (validItems.length > 0) {
-                // Generate Markdown Table
-                finalAnswer = `| Serviço/Região | Preço |\n| :--- | :--- |\n` +
-                    validItems.map(item => `| ${item.name} | ${item.price} |`).join("\n");
-            }
-        }
-
+        setLoading("saving");
         const res = await saveFAQAction({
             id: editingId || undefined,
             question: newFaq.question,
-            answer: finalAnswer,
-            isPriceList: newFaq.isPriceList,
-            priceItems: newFaq.isPriceList ? newFaq.priceItems : []
+            answer: newFaq.answer,
+            isPriceList: false,
+            priceItems: []
         });
 
         if (res.success) {
             window.location.reload();
         } else {
-            alert(res.error);
+            alert(res.error || "Erro ao salvar");
         }
         setLoading(null);
     }
@@ -115,9 +103,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
         setNewFaq({
             id: faq.id,
             question: faq.question,
-            answer: faq.answer,
-            isPriceList: faq.isPriceList,
-            priceItems: faq.priceItems && faq.priceItems.length > 0 ? faq.priceItems : [{ name: "", price: "" }]
+            answer: faq.answer
         });
         setIsAdding(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -126,7 +112,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
     function resetForm() {
         setIsAdding(false);
         setEditingId(null);
-        setNewFaq({ id: "", question: "", answer: "", isPriceList: false, priceItems: [{ name: "", price: "" }] });
+        setNewFaq({ id: "", question: "", answer: "" });
     }
 
     async function handleDelete(id: string) {
@@ -183,16 +169,6 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                     <h3 className="text-lg font-semibold text-white">
                                         {editingId ? "Editar Informação" : "Nova Pergunta/Informação"}
                                     </h3>
-                                    {!editingId && (
-                                        <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-                                            <span className="text-xs text-amber-500 font-medium">É uma tabela de preços?</span>
-                                            <Switch
-                                                checked={newFaq.isPriceList}
-                                                onCheckedChange={(checked) => setNewFaq({ ...newFaq, isPriceList: checked })}
-                                                className="data-[state=checked]:bg-amber-600 scale-75"
-                                            />
-                                        </div>
-                                    )}
                                 </div>
                                 <button onClick={resetForm} className="text-gray-500 hover:text-white cursor-pointer">
                                     <X className="w-5 h-5" />
@@ -200,79 +176,23 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                             </div>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="text-gray-300">
-                                        {newFaq.isPriceList ? "Nome do Serviço/Tabela" : "Pergunta ou Tópico"}
-                                    </Label>
+                                    <Label className="text-gray-300">Pergunta ou Tópico</Label>
                                     <Input
-                                        placeholder={newFaq.isPriceList ? "Ex: Depilação a Laser (Preços por Região)" : "Ex: Como funciona o cancelamento?"}
+                                        placeholder="Ex: Como funciona o cancelamento?"
                                         value={newFaq.question}
                                         onChange={(e) => setNewFaq({ ...newFaq, question: e.target.value })}
                                         className="bg-[#121212] border-[#2a2a2a] text-white"
                                     />
                                 </div>
-                                {newFaq.isPriceList ? (
-                                    <div className="space-y-4">
-                                        <Label className="text-gray-300">Tabela de Preços (Itens)</Label>
-                                        <div className="space-y-3">
-                                            {newFaq.priceItems.map((item, index) => (
-                                                <div key={index} className="flex gap-3 items-start animate-in fade-in slide-in-from-left-2 duration-200">
-                                                    <div className="flex-1">
-                                                        <Input
-                                                            placeholder="Nome do Item (ex: Axilas)"
-                                                            value={item.name}
-                                                            onChange={(e) => {
-                                                                const newItems = [...newFaq.priceItems];
-                                                                newItems[index].name = e.target.value;
-                                                                setNewFaq({ ...newFaq, priceItems: newItems });
-                                                            }}
-                                                            className="bg-[#121212] border-[#2a2a2a] text-white"
-                                                        />
-                                                    </div>
-                                                    <div className="w-32">
-                                                        <Input
-                                                            placeholder="R$ 0,00"
-                                                            value={item.price}
-                                                            onChange={(e) => {
-                                                                const newItems = [...newFaq.priceItems];
-                                                                newItems[index].price = e.target.value;
-                                                                setNewFaq({ ...newFaq, priceItems: newItems });
-                                                            }}
-                                                            className="bg-[#121212] border-[#2a2a2a] text-white"
-                                                        />
-                                                    </div>
-                                                    <button
-                                                        onClick={() => {
-                                                            const newItems = newFaq.priceItems.filter((_, i) => i !== index);
-                                                            setNewFaq({ ...newFaq, priceItems: newItems.length > 0 ? newItems : [{ name: "", price: "" }] });
-                                                        }}
-                                                        className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors cursor-pointer mt-1"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setNewFaq({ ...newFaq, priceItems: [...newFaq.priceItems, { name: "", price: "" }] })}
-                                            className="border-dashed border-[#2a2a2a] hover:bg-amber-500/10 hover:border-amber-500/30 text-gray-400 hover:text-amber-500 cursor-pointer"
-                                        >
-                                            <Plus className="w-4 h-4 mr-2" />
-                                            Adicionar Item
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <Label className="text-gray-300">Resposta ou Conteúdo</Label>
-                                        <Textarea
-                                            placeholder="Descreva detalhadamente a resposta que a IA deve dar."
-                                            value={newFaq.answer}
-                                            onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
-                                            className="bg-[#121212] border-[#2a2a2a] text-white min-h-[150px]"
-                                        />
-                                    </div>
-                                )}
+                                <div className="space-y-2">
+                                    <Label className="text-gray-300">Resposta ou Conteúdo</Label>
+                                    <Textarea
+                                        placeholder="Descreva detalhadamente a resposta que a IA deve dar."
+                                        value={newFaq.answer}
+                                        onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
+                                        className="bg-[#121212] border-[#2a2a2a] text-white min-h-[150px]"
+                                    />
+                                </div>
                                 <div className="flex justify-end gap-3 pt-2">
                                     <Button variant="ghost" onClick={resetForm} className="text-gray-400 cursor-pointer">
                                         Cancelar
@@ -313,11 +233,6 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                                 <div className="flex flex-col gap-1">
                                                     <span className="text-white font-medium flex items-center gap-2">
                                                         {faq.question}
-                                                        {faq.isPriceList && (
-                                                            <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-bold uppercase tracking-tighter">
-                                                                Tabela
-                                                            </span>
-                                                        )}
                                                         {faq.isAuto && (
                                                             <span className="text-[10px] bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold uppercase tracking-tighter">
                                                                 Sistema
@@ -333,7 +248,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                                         checked={faq.active}
                                                         disabled={loading === faq.id}
                                                         onCheckedChange={() => handleToggle(faq.id, faq.active)}
-                                                        className="data-[state=checked]:bg-green-600 cursor-pointer"
+                                                        className="data-[state=checked]:bg-amber-600 cursor-pointer"
                                                     />
                                                 </div>
                                             </td>
@@ -373,11 +288,11 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                 <div className="space-y-6">
                     <div className="bg-[#1c1c1c] border border-[#2a2a2a] rounded-2xl p-6 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <HelpCircle className="w-12 h-12 text-purple-400" />
+                            <HelpCircle className="w-12 h-12 text-amber-400" />
                         </div>
                         <div className="relative z-10 space-y-4">
                             <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Info className="w-5 h-5 text-purple-400" />
+                                <Info className="w-5 h-5 text-amber-400" />
                                 Como ensinar sua IA?
                             </h3>
                             <div className="space-y-3 text-sm text-gray-400 leading-relaxed">
@@ -398,10 +313,6 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                         </li>
                                         <li className="flex gap-2">
                                             <span className="text-amber-500">•</span>
-                                            Use a <strong>Tabela de Preços</strong> para listar serviços com múltiplas variações (ex: depilação por região).
-                                        </li>
-                                        <li className="flex gap-2">
-                                            <span className="text-amber-500">•</span>
                                             Dados da empresa e horários são aprendidos sozinhos pelo sistema.
                                         </li>
                                     </ul>
@@ -416,14 +327,6 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-2xl p-6 text-center">
-                        <MessageSquare className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-                        <h4 className="text-white font-bold mb-1">Precisa de Ajuda?</h4>
-                        <p className="text-gray-400 text-xs mb-4">A IA usa busca semântica, então ela entende o contexto mesmo se o cliente usar palavras diferentes.</p>
-                        <Button variant="outline" className="w-full border-amber-500/50 text-amber-500 hover:bg-amber-500/20 text-xs rounded-xl">
-                            Simular uma Conversa
-                        </Button>
-                    </div>
                 </div>
             </div>
         </div>

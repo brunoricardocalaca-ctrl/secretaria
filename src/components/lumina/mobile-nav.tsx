@@ -41,7 +41,7 @@ export function MobileNav() {
                             href={item.href}
                             className={cn(
                                 "flex flex-col items-center justify-center w-full h-full space-y-1",
-                                isActive ? "text-purple-400" : "text-gray-500 hover:text-gray-300"
+                                isActive ? "text-amber-400" : "text-gray-500 hover:text-gray-300"
                             )}
                         >
                             <item.icon className={cn("w-6 h-6", isActive && "fill-current/20")} />

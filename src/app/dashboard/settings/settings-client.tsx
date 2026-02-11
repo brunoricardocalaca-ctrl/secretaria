@@ -80,7 +80,7 @@ export function SettingsClient({ initialConfigs, initialTenantName }: { initialC
                     </h1>
                     <p className="text-gray-400 mt-1">Gerencie o comportamento e identidade da sua IA.</p>
                 </div>
-                <Button onClick={handleSave} disabled={loading} className="bg-green-600 hover:bg-green-700 text-white rounded-full px-8 shadow-lg shadow-green-900/20">
+                <Button onClick={handleSave} disabled={loading} className="bg-amber-600 hover:bg-amber-700 text-white rounded-full px-8 shadow-lg shadow-amber-900/20 cursor-pointer transition-all">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                     Salvar Alterações
                 </Button>
@@ -88,13 +88,13 @@ export function SettingsClient({ initialConfigs, initialTenantName }: { initialC
 
             <Tabs defaultValue="identity" className="space-y-6">
                 <TabsList className="bg-[#121212] border border-[#2a2a2a] p-1 h-auto rounded-full sticky top-4 z-10 backdrop-blur-md">
-                    <TabsTrigger value="identity" className="rounded-full px-6 py-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-400">
+                    <TabsTrigger value="identity" className="rounded-full px-6 py-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white text-gray-400 cursor-pointer">
                         <Bot className="w-4 h-4 mr-2" /> Identidade
                     </TabsTrigger>
-                    <TabsTrigger value="hours" className="rounded-full px-6 py-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-400">
+                    <TabsTrigger value="hours" className="rounded-full px-6 py-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white text-gray-400 cursor-pointer">
                         <Clock className="w-4 h-4 mr-2" /> Horários
                     </TabsTrigger>
-                    <TabsTrigger value="notifications" className="rounded-full px-6 py-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-gray-400">
+                    <TabsTrigger value="notifications" className="rounded-full px-6 py-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white text-gray-400 cursor-pointer">
                         <Phone className="w-4 h-4 mr-2" /> Notificações
                     </TabsTrigger>
                 </TabsList>
@@ -169,17 +169,17 @@ export function SettingsClient({ initialConfigs, initialTenantName }: { initialC
                                         key={style.id}
                                         onClick={() => handleChange("conversationStyle", style.id)}
                                         className={cn(
-                                            "flex items-center gap-3 p-4 rounded-xl border transition-all text-left group",
+                                            "flex items-center gap-3 p-4 rounded-xl border transition-all text-left group cursor-pointer",
                                             configs.conversationStyle === style.id
-                                                ? "bg-purple-500/10 border-purple-500/50"
+                                                ? "bg-amber-500/10 border-amber-500/50"
                                                 : "bg-[#121212] border-[#2a2a2a] hover:bg-[#1a1a1a]"
                                         )}
                                     >
                                         <span className="text-xl">{style.emoji}</span>
-                                        <span className={cn("text-sm font-medium", configs.conversationStyle === style.id ? "text-purple-400" : "text-gray-300")}>
+                                        <span className={cn("text-sm font-medium", configs.conversationStyle === style.id ? "text-amber-400" : "text-gray-300")}>
                                             {style.name}
                                         </span>
-                                        {configs.conversationStyle === style.id && <Check className="ml-auto w-4 h-4 text-purple-400" />}
+                                        {configs.conversationStyle === style.id && <Check className="ml-auto w-4 h-4 text-amber-400" />}
                                     </button>
                                 ))}
                             </div>
