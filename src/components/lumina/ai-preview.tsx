@@ -278,14 +278,14 @@ export function AIPreview() {
                 </Button>
             </SheetTrigger>
             <SheetContent className="bg-[#0A0A0A] border-l border-[#1F1F1F] text-white w-full sm:max-w-md p-0 flex flex-col h-full z-[100]">
-                <SheetHeader className="p-4 pr-14 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+                <SheetHeader className="p-4 pr-16 border-b border-white/5 bg-black/40 backdrop-blur-xl">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-900/20">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center shadow-lg shadow-amber-900/20 shrink-0">
                                 <Bot className="w-5 h-5 text-amber-500" />
                             </div>
-                            <div className="flex flex-col text-left">
-                                <SheetTitle className="text-white text-sm font-bold tracking-tight text-left">Assistente {assistantName}</SheetTitle>
+                            <div className="flex flex-col text-left min-w-0">
+                                <SheetTitle className="text-white text-sm font-bold tracking-tight truncate">Assistente {assistantName}</SheetTitle>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                     <p className="text-[10px] text-amber-500/70 font-medium uppercase tracking-wider">Preview em Tempo Real</p>
@@ -293,44 +293,45 @@ export function AIPreview() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 ml-4">
                             {/* Copy Feedback */}
                             {copied && (
-                                <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-right-2 duration-300">
-                                    Link Copiado
+                                <span className="text-[9px] text-green-400 font-black uppercase tracking-widest animate-in fade-in slide-in-from-right-2 duration-300 mr-2">
+                                    Copiado
                                 </span>
                             )}
 
-                            {/* Visit Site Button */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleShare('visit')}
-                                disabled={generatingLink}
-                                className="h-8 w-8 text-amber-500/50 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all rounded-lg"
-                                title="Abrir no Navegador"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
+                                {/* Visit Site Button */}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleShare('visit')}
+                                    disabled={generatingLink}
+                                    className="h-8 w-8 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 transition-all rounded-md"
+                                    title="Abrir no Navegador"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                </Button>
 
-                            {/* Copy Link Button */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleShare('copy')}
-                                disabled={generatingLink}
-                                className="h-8 w-8 text-amber-500/50 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all rounded-lg"
-                                title="Copiar Link"
-                            >
-                                {copied ? (
-                                    <Check className="w-4 h-4 text-green-400" />
-                                ) : (
-                                    <Share2 className="w-4 h-4" />
-                                )}
-                            </Button>
+                                <div className="w-px h-4 bg-white/10 mx-0.5" />
 
-                            {/* Empty space for the SheetClose X button (top-4 right-4) */}
-                            <div className="w-8" />
+                                {/* Copy Link Button */}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleShare('copy')}
+                                    disabled={generatingLink}
+                                    className="h-8 w-8 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 transition-all rounded-md"
+                                    title="Copiar Link"
+                                >
+                                    {copied ? (
+                                        <Check className="w-4 h-4 text-green-400" />
+                                    ) : (
+                                        <Share2 className="w-4 h-4" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </SheetHeader>
