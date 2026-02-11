@@ -103,7 +103,7 @@ export function AIPreview() {
 
     async function handleShare(action: 'copy' | 'visit') {
         setGeneratingLink(true);
-        const res = await generatePublicChatLink(chatId);
+        const res = await generatePublicChatLink();
 
         if (res.success && res.token) {
             const link = `${window.location.origin}/public/chat/${res.token}`;

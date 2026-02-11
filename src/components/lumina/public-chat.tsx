@@ -48,9 +48,13 @@ export function PublicChat({ token }: { token: string }) {
         fetchInfo();
     }, [token]);
 
+    // Track if message was already received (prevent duplicates from Realtime + Polling)
+    const messageReceivedRef = useRef(false);
+
     // Reset label when loading changes
     useEffect(() => {
         if (loading) {
+            messageReceivedRef.current = false;
             setLoadingLabel(statusLabels[0]);
 
             let currentIdx = 0;
@@ -81,6 +85,7 @@ export function PublicChat({ token }: { token: string }) {
             { role: 'ai', text: `Olá! Sou ${assistantName}, sua assistente virtual. Como posso ajudar?`, timestamp: new Date() }
         ]);
         setChatId(crypto.randomUUID());
+        messageReceivedRef.current = false;
     }
 
     async function handleSend() {
@@ -129,9 +134,16 @@ export function PublicChat({ token }: { token: string }) {
         const supabase = createClient();
 
         const channel = supabase.channel(`chat_${chatId}`)
-            .on('broadcast', { event: 'ai-response' }, (payload) => {
+            .on('broadcast', { event: 'ai-response' }, async (payload) => {
                 const msg = payload.payload?.message || payload.message || payload.payload;
-                if (!isCancelled && typeof msg === 'string') {
+                if (!isCancelled && typeof msg === 'string' && !messageReceivedRef.current) {
+                    messageReceivedRef.current = true;
+
+                    // Consume database entry to prevent polling from finding it
+                    try {
+                        await checkAIResponse(chatId);
+                    } catch (e) { }
+
                     setMessages(prev => [...prev, {
                         role: 'ai',
                         text: msg,
@@ -154,9 +166,14 @@ export function PublicChat({ token }: { token: string }) {
 
         let isCancelled = false;
         const pollInterval = setInterval(async () => {
-            if (isCancelled) return;
+            if (isCancelled || messageReceivedRef.current) {
+                if (messageReceivedRef.current) clearInterval(pollInterval);
+                return;
+            }
+
             const res = await checkAIResponse(chatId);
-            if (!isCancelled && res.success && res.message) {
+            if (!isCancelled && res.success && res.message && !messageReceivedRef.current) {
+                messageReceivedRef.current = true;
                 setMessages(prev => [...prev, { role: 'ai', text: res.message!, timestamp: new Date() }]);
                 setLoading(false);
             }
