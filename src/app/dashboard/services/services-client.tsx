@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Edit2, Trash2, MoreVertical, Scissors, Brain, Loader2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, MoreVertical, Briefcase, Brain, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ServiceForm } from "@/components/lumina/service-form";
@@ -93,7 +93,7 @@ export function ServicesClient({ initialServices }: { initialServices: any[] }) 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                        <Scissors className="w-8 h-8 text-purple-500" />
+                        <Briefcase className="w-8 h-8 text-amber-500" />
                         Serviços
                     </h1>
                     <p className="text-gray-400 mt-1">Gerencie os procedimentos que a IA pode oferecer.</p>
@@ -101,20 +101,7 @@ export function ServicesClient({ initialServices }: { initialServices: any[] }) 
 
                 {view === "list" && (
                     <div className="flex items-center gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={handleSync}
-                            disabled={syncing}
-                            className="border-purple-500/20 text-purple-400 hover:bg-purple-500/10 hover:text-white rounded-full px-6"
-                        >
-                            {syncing ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                                <Brain className="w-4 h-4 mr-2" />
-                            )}
-                            Sincronizar com IA
-                        </Button>
-                        <Button onClick={handleAddNew} className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6">
+                        <Button onClick={handleAddNew} className="bg-amber-600 hover:bg-amber-700 text-white rounded-full px-6 shadow-lg shadow-amber-900/20">
                             <Plus className="w-4 h-4 mr-2" /> Novo Serviço
                         </Button>
                     </div>
@@ -130,7 +117,7 @@ export function ServicesClient({ initialServices }: { initialServices: any[] }) 
                             placeholder="Buscar serviço..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-[#1c1c1c] border-[#2a2a2a] pl-10 h-12 rounded-xl text-white focus:border-purple-500/50"
+                            className="bg-[#1c1c1c] border-[#2a2a2a] pl-10 h-12 rounded-xl text-white focus:border-amber-500/50"
                         />
                     </div>
 
@@ -145,7 +132,7 @@ export function ServicesClient({ initialServices }: { initialServices: any[] }) 
                                 <div
                                     key={service.id}
                                     className={cn(
-                                        "bg-[#1c1c1c] border border-[#2a2a2a] p-5 rounded-2xl flex items-center justify-between group hover:border-purple-500/20 transition-all",
+                                        "bg-[#1c1c1c] border border-[#2a2a2a] p-5 rounded-2xl flex items-center justify-between group hover:border-amber-500/20 transition-all",
                                         !service.active && "opacity-50 grayscale-[0.5]"
                                     )}
                                 >
@@ -155,7 +142,7 @@ export function ServicesClient({ initialServices }: { initialServices: any[] }) 
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <Scissors className="w-5 h-5 text-gray-500" />
+                                                <Briefcase className="w-5 h-5 text-gray-500" />
                                             )}
                                         </div>
                                         <div>

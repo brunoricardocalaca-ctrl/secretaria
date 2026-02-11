@@ -15,7 +15,8 @@ import {
     Sparkles,
     AlertCircle,
     Pencil,
-    Bot
+    Bot,
+    Brain
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -154,7 +155,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                        <Sparkles className="w-8 h-8 text-purple-400" />
+                        <Brain className="w-8 h-8 text-amber-500" />
                         Base de Conhecimento
                     </h1>
                     <p className="text-gray-400 mt-1">Treine sua IA com informações específicas da sua empresa.</p>
@@ -162,25 +163,8 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                 {!isAdding && (
                     <div className="flex gap-3">
                         <Button
-                            onClick={handleSync}
-                            disabled={syncing}
-                            className="bg-[#1F1F1F] border border-[#2a2a2a] hover:bg-[#2a2a2a] text-white rounded-full px-6 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                        >
-                            {syncing ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-purple-500" />
-                                    Treinando IA...
-                                </>
-                            ) : (
-                                <>
-                                    <Bot className="w-4 h-4 mr-2 text-purple-400" />
-                                    Treinar IA
-                                </>
-                            )}
-                        </Button>
-                        <Button
                             onClick={() => setIsAdding(true)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 shadow-lg shadow-purple-900/20 cursor-pointer transition-all hover:scale-105 active:scale-95"
+                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-full px-6 shadow-lg shadow-amber-900/20 cursor-pointer transition-all hover:scale-105 active:scale-95"
                         >
                             <Plus className="w-4 h-4 mr-2" />
                             Adicionar Informação
@@ -193,19 +177,19 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                 {/* Main Content: FAQ List */}
                 <div className="lg:col-span-2 space-y-6">
                     {isAdding && (
-                        <div className="bg-[#1c1c1c] border border-purple-500/30 rounded-2xl p-6 space-y-4 shadow-2xl shadow-purple-900/10 animate-in slide-in-from-top-4 duration-300">
+                        <div className="bg-[#1c1c1c] border border-amber-500/30 rounded-2xl p-6 space-y-4 shadow-2xl shadow-amber-900/10 animate-in slide-in-from-top-4 duration-300">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-3">
                                     <h3 className="text-lg font-semibold text-white">
                                         {editingId ? "Editar Informação" : "Nova Pergunta/Informação"}
                                     </h3>
                                     {!editingId && (
-                                        <div className="flex items-center gap-2 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
-                                            <span className="text-xs text-purple-400 font-medium">É uma tabela de preços?</span>
+                                        <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                                            <span className="text-xs text-amber-500 font-medium">É uma tabela de preços?</span>
                                             <Switch
                                                 checked={newFaq.isPriceList}
                                                 onCheckedChange={(checked) => setNewFaq({ ...newFaq, isPriceList: checked })}
-                                                className="data-[state=checked]:bg-purple-600 scale-75"
+                                                className="data-[state=checked]:bg-amber-600 scale-75"
                                             />
                                         </div>
                                     )}
@@ -272,7 +256,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setNewFaq({ ...newFaq, priceItems: [...newFaq.priceItems, { name: "", price: "" }] })}
-                                            className="border-dashed border-[#2a2a2a] hover:bg-purple-500/10 hover:border-purple-500/30 text-gray-400 hover:text-purple-400 cursor-pointer"
+                                            className="border-dashed border-[#2a2a2a] hover:bg-amber-500/10 hover:border-amber-500/30 text-gray-400 hover:text-amber-500 cursor-pointer"
                                         >
                                             <Plus className="w-4 h-4 mr-2" />
                                             Adicionar Item
@@ -296,7 +280,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                     <Button
                                         onClick={handleSave}
                                         disabled={loading === "saving"}
-                                        className="bg-purple-600 hover:bg-purple-700 text-white px-8 cursor-pointer"
+                                        className="bg-amber-600 hover:bg-amber-700 text-white px-8 cursor-pointer shadow-lg shadow-amber-900/20"
                                     >
                                         {loading === "saving" ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                                         Salvar na Memória
@@ -335,7 +319,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                                             </span>
                                                         )}
                                                         {faq.isAuto && (
-                                                            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/20 font-bold uppercase tracking-tighter">
+                                                            <span className="text-[10px] bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold uppercase tracking-tighter">
                                                                 Sistema
                                                             </span>
                                                         )}
@@ -359,7 +343,7 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                                         <button
                                                             onClick={() => handleEdit(faq)}
                                                             disabled={loading === faq.id}
-                                                            className="p-2 text-gray-500 hover:text-purple-400 hover:bg-purple-400/10 rounded-lg transition-all cursor-pointer"
+                                                            className="p-2 text-gray-500 hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-all cursor-pointer"
                                                             title="Editar"
                                                         >
                                                             <Pencil className="w-4 h-4" />
@@ -405,19 +389,19 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                                     <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Dicas Simples:</p>
                                     <ul className="space-y-2">
                                         <li className="flex gap-2">
-                                            <span className="text-purple-500">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Escreva de forma clara, como se estivesse ensinando um novo funcionário.
                                         </li>
                                         <li className="flex gap-2">
-                                            <span className="text-purple-500">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Use as perguntas que seus clientes mais costumam fazer no dia a dia.
                                         </li>
                                         <li className="flex gap-2">
-                                            <span className="text-purple-500">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Use a <strong>Tabela de Preços</strong> para listar serviços com múltiplas variações (ex: depilação por região).
                                         </li>
                                         <li className="flex gap-2">
-                                            <span className="text-purple-500">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Dados da empresa e horários são aprendidos sozinhos pelo sistema.
                                         </li>
                                     </ul>
@@ -432,11 +416,11 @@ export function KnowledgeClient({ initialFaqs }: { initialFaqs: FAQ[] }) {
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30 rounded-2xl p-6 text-center">
-                        <MessageSquare className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                    <div className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-2xl p-6 text-center">
+                        <MessageSquare className="w-8 h-8 text-amber-500 mx-auto mb-3" />
                         <h4 className="text-white font-bold mb-1">Precisa de Ajuda?</h4>
                         <p className="text-gray-400 text-xs mb-4">A IA usa busca semântica, então ela entende o contexto mesmo se o cliente usar palavras diferentes.</p>
-                        <Button variant="outline" className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/20 text-xs rounded-xl">
+                        <Button variant="outline" className="w-full border-amber-500/50 text-amber-500 hover:bg-amber-500/20 text-xs rounded-xl">
                             Simular uma Conversa
                         </Button>
                     </div>
