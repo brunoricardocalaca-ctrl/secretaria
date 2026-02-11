@@ -44,6 +44,10 @@ export class EvolutionClient {
         });
     }
 
+    async setSettings(instanceName: string, settings: any) {
+        return this.request(`/settings/set/${instanceName}`, "POST", settings);
+    }
+
     async connectInstance(instanceName: string) {
         // Evolution API v2: /instance/connect/{instance}
         return this.request(`/instance/connect/${instanceName}`, "GET");

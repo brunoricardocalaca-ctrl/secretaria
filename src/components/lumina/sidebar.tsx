@@ -16,8 +16,6 @@ import {
     Briefcase,
     ChevronLeft,
     ChevronRight,
-    Eye,
-    EyeOff,
     CalendarDays,
     Repeat,
     Bell
@@ -130,9 +128,6 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
             }
         }
     };
-
-    // Rule: Offline if toggle is off OR whatsapp is disconnected
-    const effectiveOnline = attendant?.isOnline && attendant?.isWhatsappConnected;
 
     return (
         <div className="flex flex-col h-full bg-glass">
@@ -260,13 +255,19 @@ export function SidebarContent({ isCollapsed = false, isMobile = false, onNaviga
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className={cn(
                                         "w-1.5 h-1.5 rounded-full",
-                                        effectiveOnline ? "bg-green-500 animate-pulse" : "bg-red-500"
+                                        !attendant?.isOnline && "bg-red-500",
+                                        attendant?.isOnline && !attendant?.isWhatsappConnected && "bg-amber-500",
+                                        attendant?.isOnline && attendant?.isWhatsappConnected && "bg-green-500 animate-pulse"
                                     )} />
                                     <p className={cn(
                                         "text-[10px] font-medium uppercase tracking-wider",
-                                        effectiveOnline ? "text-green-500" : "text-red-500"
+                                        !attendant?.isOnline && "text-red-500",
+                                        attendant?.isOnline && !attendant?.isWhatsappConnected && "text-amber-500",
+                                        attendant?.isOnline && attendant?.isWhatsappConnected && "text-green-500"
                                     )}>
-                                        {effectiveOnline ? "Online" : (attendant?.isWhatsappConnected === false ? "WhatsApp Offline" : "Modo Offline")}
+                                        {!attendant?.isOnline
+                                            ? "Modo Offline"
+                                            : (attendant?.isWhatsappConnected === false ? "WhatsApp Offline" : "Online")}
                                     </p>
                                 </div>
                             </div>

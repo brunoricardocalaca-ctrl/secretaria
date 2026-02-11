@@ -91,8 +91,19 @@ export async function syncWebhooksAction() {
             select: { configs: true }
         });
 
-        const webhookUrl = (tenant?.configs as any)?.n8nWebhookUrl;
-        if (!webhookUrl) throw new Error("Webhook n8n não configurado.");
+        // Fetch Webhook Hierarchy
+        let webhookUrl = (tenant?.configs as any)?.n8nWebhookUrl;
+
+        if (!webhookUrl) {
+            const globalConfig = await prisma.systemConfig.findUnique({
+                where: { key: "n8n_webhook_url" }
+            });
+            webhookUrl = globalConfig?.value;
+        }
+
+        if (!webhookUrl) {
+            webhookUrl = process.env.N8N_WEBHOOK_URL || `${process.env.NEXT_PUBLIC_SITE_URL}/api/evolution/webhook`;
+        }
 
         const instances = await prisma.whatsappInstance.findMany({
             where: { tenantId }
@@ -102,7 +113,21 @@ export async function syncWebhooksAction() {
 
         for (const inst of instances) {
             try {
+                // 1. Sync Webhook
                 await evolution.setWebhook(inst.internalName, webhookUrl, ["MESSAGES_UPSERT"]);
+
+                // 2. Sync Settings (Activation)
+                await evolution.setSettings(inst.internalName, {
+                    rejectCall: true,
+                    msgCall: "Olá! No momento não conseguimos atender chamadas por aqui. Por favor, envie uma mensagem de texto.",
+                    groupsIgnore: true,
+                    alwaysOnline: true,
+                    readMessages: true,
+                    readStatus: true,
+                    syncFullHistory: false
+                });
+
+                console.log(`[Manual Sync] Successfully updated ${inst.internalName}`);
             } catch (err) {
                 console.error(`[Manual Sync] Failed for ${inst.internalName}:`, err);
             }

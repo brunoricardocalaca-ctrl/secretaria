@@ -57,7 +57,21 @@ export async function createWhatsappInstance(formData: FormData) {
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId }
         });
-        const webhookUrl = (tenant?.configs as any)?.n8nWebhookUrl;
+
+        // Fetch Global Config if tenant-specific is missing
+        let webhookUrl = (tenant?.configs as any)?.n8nWebhookUrl;
+
+        if (!webhookUrl) {
+            const globalConfig = await prisma.systemConfig.findUnique({
+                where: { key: "n8n_webhook_url" }
+            });
+            webhookUrl = globalConfig?.value;
+        }
+
+        // Fallback to Env or Internal
+        if (!webhookUrl) {
+            webhookUrl = process.env.N8N_WEBHOOK_URL || `${process.env.NEXT_PUBLIC_SITE_URL}/api/evolution/webhook`;
+        }
 
         if (webhookUrl) {
             console.log(`[Action] Auto-configuring webhook for ${internalName}: ${webhookUrl}`);
@@ -69,6 +83,22 @@ export async function createWhatsappInstance(formData: FormData) {
                 console.error(`[Action] Failed to auto-configure webhook:`, webhookErr);
                 // We continue because the instance was created, but log the error
             }
+        }
+
+        // 3. Auto-configure Instance Settings (Activation)
+        try {
+            console.log(`[Action] Activating instance settings for ${internalName}`);
+            await client.setSettings(internalName, {
+                rejectCall: true,
+                msgCall: "Olá! No momento não conseguimos atender chamadas por aqui. Por favor, envie uma mensagem de texto.",
+                groupsIgnore: true,
+                alwaysOnline: true,
+                readMessages: true,
+                readStatus: true,
+                syncFullHistory: false
+            });
+        } catch (settingsErr) {
+            console.error(`[Action] Failed to auto-configure instance settings:`, settingsErr);
         }
 
         // 3. Save in Database
